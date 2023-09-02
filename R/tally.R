@@ -1,109 +1,44 @@
 library(tidyverse)
-library(lubridate)
-library(janitor)
-library(assertr)
-library(googlesheets4)
+library(glue)
 
-# Load and format ballot ----
+# Load custom functions
+source("R/functions.R")
 
-ballot_file <- "data/ppg_ballot-2.csv"
+# Set variables - change this each time ballot is tallied
+ballot_number <- "2"
+vote_period <- "August 2023"
 ballot_cutoff <- "2023-08-31 23:59:50"
+ballot_file <- glue("data/ppg_ballot-{ballot_number}.csv")
 
-ballot <- read_csv(ballot_file, show_col_types = FALSE) |>
-  rename(timestamp = Timestamp, email = Username) |>
-  mutate(email = tolower(email)) |>
-  # Convert time stamp to Greenwich time (same as UTC)
-  mutate(timestamp = str_remove(timestamp, " GMT\\+9")) |>
-  mutate(timestamp = ymd_hms(timestamp, tz = "Greenwich") + hours(9)) |>
-  # Add voting cutoff
-  mutate(cutoff = ymd_hms(ballot_cutoff, tz = "Greenwich"))
+# Check ballots
+ballot_checked <- check_ballot(
+  ballot_file,
+  ballot_cutoff,
+  # should be a URL to PPG2 email list on Google Sheets
+  email_file = "https://docs.google.com/spreadsheets/d/1QxOP-7N0IKgeNA_gdh2bGmRZKGPgf__IRGYG_tn1dDI/edit#gid=0" # nolint
+)
 
-# Load and format email list -----
-
-# PPG mailing-list email is in column "email" and other emails are in column
-# "other email". Combine this into single email column.
-ppg_emails <- read_sheet(
-  "https://docs.google.com/spreadsheets/d/1vxlmf8QPndiE6dIeDcjoFT7GA3ZE4pSc_Z1raf4iuwA/edit#gid=0" # nolint
-  ) |>
-  clean_names()
-
-# add 'other email' so that each name may have multiple email addresses
-ppg_emails <-
-  ppg_emails |>
-  select(name, email = primary) |>
-  bind_rows(
-    select(ppg_emails, name, email = other_email)
-  ) |>
-  filter(!is.na(email)) |>
-  mutate(email = tolower(email)) |>
-  unique() |>
-  assert(is_uniq, email) |>
-  assert(not_na, name)
-
-# Conduct checks
-ballot_checked <-
-  ballot |>
-  # Add check that all emails are in PPG list
-  left_join(select(ppg_emails, name = name, email = email), by = "email") |>
-  mutate(email_check = !is.na(name)) |>
-  # Add check that all emails pass time stamp cutoff
-  mutate(time_check = timestamp < cutoff) |>
-  # Add check for duplicated names of submitters
-  # only keep most recent vote per person
-  arrange(name, desc(timestamp)) |>
-  mutate(name_check = !duplicated(name))
-
+# Inspect ballots that fail any checks:
+# - ballots not passing email check (email not in list)
 ballot_checked |>
   filter(email_check == FALSE)
 
+# - ballots not passing time check (submitted after deadline)
 ballot_checked |>
   filter(time_check == FALSE)
 
+# - ballots not passing name check (same person submitted multiple times)
+# This is actually OK since on the most recent vote will be counted.
 ballot_checked |>
   filter(name_check == FALSE)
 
-# Filter out votes that don't pass checks
-ballot_final <-
-  ballot_checked |>
-  filter(email_check == TRUE) |>
-  filter(time_check == TRUE) |>
-  filter(name_check == TRUE) |>
-  select(-contains("check"))
+# Filter out votes that don't pass checks and tally
+votes_tally <- tally_votes(ballot_checked)
 
-# Tally votes
-tally_final <-
-  ballot_final |>
-  select(-timestamp, -email, -`GitHub username`, -cutoff, -name) |>
-  pivot_longer(names_to = "proposal", values_to = "response", everything()) |>
-  group_by(proposal) |>
-  count(response) |>
-  filter(response != "Abstain") |>
-  mutate(total = sum(n)) |>
-  ungroup() |>
-  rowwise() |>
-  mutate(percent = (n / total) * 100)
+# Write out tally table
+votes_tally |>
+  write_csv(glue("results/ballot-{ballot_number}_results.csv"))
 
-tally_n <-
-  tally_final |>
-  pivot_wider(names_from = response, values_from = n, id_cols = proposal) |>
-  mutate(No = replace_na(No, 0)) |>
-  rename(no_n = No, yes_n = Yes)
-
-tally_p <-
-  tally_final |>
-  mutate(percent = round(percent, 1)) |>
-  pivot_wider(
-    names_from = response, values_from = percent, id_cols = proposal) |>
-  mutate(No = replace_na(No, 0)) |>
-  rename(no_p = No, yes_p = Yes)
-
-left_join(tally_n, tally_p, by = "proposal") |>
-  rowwise() |>
-  mutate(total = sum(no_n, yes_n, na.rm = TRUE)) |>
-  mutate(
-    min_to_pass = round((2 / 3) * total, 0),
-    result = if_else(yes_n > min_to_pass, "passes", "does not pass")
-  ) |>
-  mutate(text = glue::glue(
-    "This proposal was voted on during PPG Ballot 1 (voting period July 2023). A total of {total} votes were cast. There were {yes_n} 'Yes' votes ({yes_p}%) and {no_n} 'No' votes ({no_p}%). The proposal {result}.")) |>
-  select(proposal, text)
+# Format tally results for posting to GitHub
+format_tally(votes_tally, ballot_number, vote_period) |>
+  write_csv(glue("results/ballot-{ballot_number}_results_text.csv"))
