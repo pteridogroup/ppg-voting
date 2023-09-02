@@ -1,5 +1,6 @@
 library(jsonlite)
 library(tidyverse)
+library(lubridate)
 
 # Import issues from JSON
 issues_json <- fromJSON(
@@ -31,3 +32,14 @@ issues <-
              magrittr::extract(, 2)
   ) %>%
     select(-body)
+
+# Filter to issues to those after date cutoff
+cutoff_start <- ymd("2023-05-31")
+cutoff_end <- ymd("2023-07-01")
+
+issues |>
+  separate(created_at, c("created_date", "created_time"), sep = "T") |>
+  mutate(created_date = ymd(created_date)) |>
+  filter(created_date > cutoff_start) |>
+  filter(created_date < cutoff_end) |>
+  arrange(number)
