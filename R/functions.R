@@ -107,3 +107,39 @@ format_tally <- function(tally_final, ballot_number, vote_period) {
     ) |>
     dplyr::select(proposal, text)
 }
+
+# Extract useful information to dataframe
+fetch_issues <- function(repo) {
+
+  issues_json <-
+    glue::glue("https://api.github.com/repos/{repo}/issues?state=all") |>
+    jsonlite::fromJSON()
+
+  tibble::tibble(
+    number = issues_json$number,
+    title = issues_json$title,
+    url = issues_json$url,
+    created_at = issues_json$created_at,
+    user = issues_json$user$login,
+    state = issues_json$state,
+    body = issues_json$body,
+    # draft = issues_json$draft # draft only applies to PRs, use if PRs exist
+  ) |>
+    # Remove PRs: issues have NA for draft
+    # filter(is.na(draft)) %>%
+    # select(-draft) %>%
+  dplyr::mutate(
+    url = stringr::str_replace_all(
+      url, "https://api.github.com/repos/", "https://github.com/"),
+    name = stringr::str_match(body, "Name of taxon\n\n(.*)") |>
+             magrittr::extract(, 2),
+    rank = stringr::str_match(body, "Rank of taxon\n\n(.*)") |>
+             magrittr::extract(, 2),
+    no_species = stringr::str_match(
+      body, "number of species affected\n\n(.*)") |>
+             magrittr::extract(, 2),
+    description = stringr::str_match(body, "Description of change\n\n(.*)") |>
+      magrittr::extract(, 2)
+  ) |>
+    dplyr::select(-body)
+}
