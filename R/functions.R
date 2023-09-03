@@ -143,3 +143,18 @@ fetch_issues <- function(repo) {
   ) |>
     dplyr::select(-body)
 }
+
+# Filter proposals to those matching a particular status string
+# and extract a single string of text to print in the email digest
+proposal_df2txt <- function(proposals, status_search) {
+  text_compact <-
+    proposals |>
+      dplyr::filter(stringr::str_detect(status, status_search)) |>
+      dplyr::pull(text) |>
+      paste(collapse = "\n")
+  if (text_compact == "") {
+    return("(none)")
+  } else {
+    return(text_compact)
+  }
+}
