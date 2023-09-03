@@ -8,7 +8,7 @@ source("R/functions.R")
 ballot_number <- "2"
 vote_period <- "August 2023"
 ballot_cutoff <- "2023-08-31 23:59:50"
-ballot_file <- glue("data/ppg_ballot-{ballot_number}.csv")
+ballot_file <- "https://docs.google.com/spreadsheets/d/1HiJP3RmxTDVJy14KPx4wsn2MLgYwdrkYmCf2ac_tvMo/edit?usp=sharing" # nolint
 
 # Check ballots
 ballot_checked <- check_ballot(

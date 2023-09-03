@@ -3,8 +3,8 @@ check_ballot <- function(
     ballot_cutoff,
     email_file) {
   # Load ballot ----
-  ballot <- readr::read_csv(ballot_file, show_col_types = FALSE) |>
-    dplyr::rename(timestamp = Timestamp, email = Username) |>
+  ballot <- googlesheets4::read_sheet(ballot_file) |>
+    dplyr::rename(timestamp = Timestamp, email = `Email Address`) |>
     dplyr::mutate(email = tolower(email)) |>
     # Convert time stamp to Greenwich time (same as UTC)
     dplyr::mutate(timestamp = stringr::str_remove(timestamp, " GMT\\+9")) |>
