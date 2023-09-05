@@ -15,7 +15,7 @@ ballot_checked <- check_ballot(
   ballot_file,
   ballot_cutoff,
   # should be a URL to PPG2 email list on Google Sheets
-  email_file = "https://docs.google.com/spreadsheets/d/1QxOP-7N0IKgeNA_gdh2bGmRZKGPgf__IRGYG_tn1dDI/edit#gid=0" # nolint
+  email_file = "https://docs.google.com/spreadsheets/d/1vxlmf8QPndiE6dIeDcjoFT7GA3ZE4pSc_Z1raf4iuwA/edit?usp=sharing" # nolint
 )
 
 # Inspect ballots that fail any checks:

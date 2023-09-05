@@ -26,9 +26,9 @@ check_ballot <- function(
   # so that each name may have multiple email addresses
   ppg_emails <-
     ppg_emails |>
-    dplyr::select(name, email = email_1) |>
+    dplyr::select(name, email = primary) |>
     dplyr::bind_rows(
-      dplyr::select(ppg_emails, name, email = email_2)
+      dplyr::select(ppg_emails, name, email = secondary)
     ) |>
     dplyr::filter(!is.na(email)) |>
     dplyr::mutate(email = tolower(email)) |>
