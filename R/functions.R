@@ -151,7 +151,7 @@ proposal_df2txt <- function(proposals, status_search) {
     proposals |>
       dplyr::filter(stringr::str_detect(status, status_search)) |>
       dplyr::pull(text) |>
-      paste(collapse = "\n")
+      paste(collapse = "<br>")
   if (text_compact == "") {
     return("(none)")
   } else {

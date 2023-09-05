@@ -2,6 +2,7 @@ library(tidyverse)
 library(glue)
 library(lubridate)
 library(assertr)
+library(gmailr)
 
 # Load custom functions
 source("R/functions.R")
@@ -31,29 +32,46 @@ proposals <-
     text = glue::glue(
       "{number}. {title}: {url} ({year(created_at)}-{month(created_at)}-{day(created_at)})" # nolint
     )
-  ) |>
-  arrange(proposals, desc(created_at))
+  )
 
 # Generate email text
-c(
-  glue::glue("PPG Email Digest {current_day}\n\n"),
-  paste("This is an automated email summarizing taxonomic proposals submitted",
+digest_subject <- glue::glue("PPG Email Digest {current_day}")
+digest_body <- c(
+  glue::glue("<p><b>{digest_subject}</b></p>"),
+  paste(
+    "<p>This is an automated email summarizing taxonomic proposals submitted",
     "to PPG (https://github.com/pteridogroup/ppg). It is sent to everyone",
     "on the PPG mailing list once per week. If you do not wish to receive",
     "it or have any questions, please contact Eric Schuettpelz",
-    "(schuettpelze@si.edu).\n\nOnly",
-    "proposals that have not yet been decided are shown.",
+    "(schuettpelze@si.edu).</p>",
+    "<p>Only proposals that have not yet been decided are shown.",
     "Note that numbering of proposals is unique, but not consecutive",
-    "(some numbers may be skipped)."),
-  "\nDO NOT REPLY TO THIS EMAIL; no response will be given.\n",
-  "------\n",
-  "Proposals submitted this month\n",
+    "(some numbers may be skipped).</p>",
+    "<p>It is also recommended to subscribe to GitHub notifications for PPG.",
+    "For instructions, see the",
+    "<a href = 'https://pteridogroup.github.io/github.html#notifications'>GitHub guide</a>.</p>"), # nolint
+  "<p><b>DO NOT REPLY TO THIS EMAIL</b>; no response will be given.</p>",
+  "<hr>",
+  "<p>Proposals submitted this month</p>",
   proposal_df2txt(proposals, "this month"),
-  "\nProposals submitted last month (will go on next ballot)\n",
+  "<p>Proposals submitted last month (will go on next ballot)</p>",
   proposal_df2txt(proposals, "last month"),
-  "\nProposals submitted two months ago (on current ballot)\n",
+  "<p>Proposals submitted two months ago (on current ballot)</p>",
   proposal_df2txt(proposals, "current ballot")
 ) |>
-  write_lines(
-    "results/digest_email.txt"
-  )
+  paste(collapse = "")
+
+digest_email <-
+  gm_mime() |>
+  gm_to("joelnitta@gmail.com") |>
+  gm_from("pteridogroup.no.reply@gmail.com") |>
+  gm_subject(glue::glue("[{digest_subject}]")) |>
+  gm_html_body(digest_body)
+
+# Authenticate email server
+gm_auth_configure()
+gm_oauth_client()
+gm_auth(email = "pteridogroup.no.reply@gmail.com")
+
+# or the existing MIME message
+gm_send_message(digest_email)
