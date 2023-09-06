@@ -70,7 +70,7 @@ RUN touch /var/log/cron.log
 RUN (crontab -l ; echo "0 0 * * 1 bash /home/digest.sh >> /var/log/cron.log 2>&1") | crontab
 
 # To run the cron job, provide the command `cron` to `docker run`:
-# docker run --rm -dt -v ${PWD}:/wd -w /wd --name setup_gb joelnitta/ftol:latest cron -f
+# docker run --rm -dt -v ${PWD}:/wd -w /wd --name setup_gb joelnitta/ppg-voting:latest cron -f
 # 
 # as long as the container is up, it will run the job once per week
 
