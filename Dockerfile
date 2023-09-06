@@ -7,12 +7,25 @@ ARG DEBIAN_FRONTEND=noninteractive
 ############################
 
 # cron for cronjobs
+# get list of other deps using R/find_deps.R
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    libcurl4-openssl-dev \
-    libssl-dev \
     cron \
+    libcurl4-openssl-dev \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libfribidi-dev \
+    libharfbuzz-dev \
+    libicu-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libssl-dev \
+    libtiff-dev \
+    libxml2-dev \
+    make \
+    pandoc \
+    zlib1g-dev \
   && apt-get clean
 
 ####################################
