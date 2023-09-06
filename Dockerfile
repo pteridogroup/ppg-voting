@@ -67,7 +67,7 @@ RUN echo "#!/bin/bash" >> /home/digest.sh && \
 RUN touch /var/log/cron.log
 
 # Setup cron job: Run at 12:00am on Monday
-RUN (crontab -l ; echo "0 0 * * 1 bash /home/setup_gb.sh >> /var/log/cron.log 2>&1") | crontab
+RUN (crontab -l ; echo "0 0 * * 1 bash /home/digest.sh >> /var/log/cron.log 2>&1") | crontab
 
 # To run the cron job, provide the command `cron` to `docker run`:
 # docker run --rm -dt -v ${PWD}:/wd -w /wd --name setup_gb joelnitta/ftol:latest cron -f
