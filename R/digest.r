@@ -69,9 +69,12 @@ digest_email <-
   gm_html_body(digest_body)
 
 # Authenticate email server
-gm_auth_configure()
+options(gargle_oauth_cache = ".secrets")
+secret_json <- list.files(
+  ".secrets", pattern = "client_secret.*json", full.names = TRUE)
+gm_auth_configure(path = secret_json)
 gm_oauth_client()
-gm_auth(email = "pteridogroup.no.reply@gmail.com")
+gm_auth("pteridogroup.no.reply@gmail.com")
 
 # or the existing MIME message
 gm_send_message(digest_email)
