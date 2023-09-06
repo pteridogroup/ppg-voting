@@ -3,3 +3,4 @@ results
 .Rproj.user
 .Rhistory
 *.Rproj
+.secrets
