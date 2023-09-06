@@ -115,20 +115,29 @@ fetch_issues <- function(repo) {
     glue::glue("https://api.github.com/repos/{repo}/issues?state=all") |>
     jsonlite::fromJSON()
 
-  tibble::tibble(
+  # Create initial tibble of issues (may include PRs)
+  issues_df <- tibble::tibble(
     number = issues_json$number,
     title = issues_json$title,
     url = issues_json$url,
     created_at = issues_json$created_at,
     user = issues_json$user$login,
     state = issues_json$state,
-    body = issues_json$body,
-    # draft = issues_json$draft # draft only applies to PRs, use if PRs exist
-  ) |>
-    # Remove PRs: issues have NA for draft
-    # filter(is.na(draft)) %>%
-    # select(-draft) %>%
-  dplyr::mutate(
+    body = issues_json$body
+  )
+
+  # If any PRs exist, remove them
+  if (!is.null(issues_json$draft)) {
+    issues_df <-
+      issues_df |>
+      dplyr::mutate(draft = issues_json$draft) |>
+      dplyr::filter(is.na(draft)) |>
+      dplyr::select(-draft)
+  }
+
+  # Format final data frame
+  issues_df |>
+    dplyr::mutate(
     url = stringr::str_replace_all(
       url, "https://api.github.com/repos/", "https://github.com/"),
     name = stringr::str_match(body, "Name of taxon\n\n(.*)") |>
@@ -137,7 +146,7 @@ fetch_issues <- function(repo) {
              magrittr::extract(, 2),
     no_species = stringr::str_match(
       body, "number of species affected\n\n(.*)") |>
-             magrittr::extract(, 2),
+       magrittr::extract(, 2),
     description = stringr::str_match(body, "Description of change\n\n(.*)") |>
       magrittr::extract(, 2)
   ) |>

@@ -12,8 +12,10 @@ current_day <- today("UTC")
 
 # Filter to proposals to include in email, add status and text to print
 proposals <-
-  fetch_issues("pteridogroup/ppg")|>
+  fetch_issues("pteridogroup/ppg") |>
   filter(state == "open") |>
+  # Only include taxonomic proposals (should have an entry for rank)
+  filter(!is.na(rank)) |>
   mutate(created_at = ymd_hms(created_at, tz = "UTC")) |>
   mutate(
     status = case_when(
@@ -63,7 +65,7 @@ digest_body <- c(
 
 digest_email <-
   gm_mime() |>
-  gm_to("joelnitta@gmail.com") |>
+  gm_to("ourPPG@googlegroups.com") |>
   gm_from("pteridogroup.no.reply@gmail.com") |>
   gm_subject(glue::glue("[{digest_subject}]")) |>
   gm_html_body(digest_body)
