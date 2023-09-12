@@ -67,7 +67,7 @@ digest_email <-
   gm_mime() |>
   gm_to("ourPPG@googlegroups.com") |>
   gm_from("pteridogroup.no.reply@gmail.com") |>
-  gm_subject(glue::glue("[{digest_subject}]")) |>
+  gm_subject(glue::glue("[OurPPG] {digest_subject}")) |>
   gm_html_body(digest_body)
 
 # Authenticate email server
