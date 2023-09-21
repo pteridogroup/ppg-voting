@@ -67,7 +67,7 @@ digest_email <-
   gm_mime() |>
   gm_to("ourPPG@googlegroups.com") |>
   gm_from("pteridogroup.no.reply@gmail.com") |>
-  gm_subject(glue::glue("[OurPPG] {digest_subject}")) |>
+  gm_subject(digest_subject) |>
   gm_html_body(digest_body)
 
 # Authenticate email server
@@ -78,5 +78,8 @@ gm_auth_configure(path = secret_json)
 gm_oauth_client()
 gm_auth("pteridogroup.no.reply@gmail.com")
 
-# or the existing MIME message
+# Verify it looks correct, i.e. look at your Gmail drafts in the browser
+# gm_create_draft(digest_email) # nolint
+
+# or just send the existing MIME message
 gm_send_message(digest_email)

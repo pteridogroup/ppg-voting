@@ -140,15 +140,16 @@ fetch_issues <- function(repo) {
     dplyr::mutate(
     url = stringr::str_replace_all(
       url, "https://api.github.com/repos/", "https://github.com/"),
-    name = stringr::str_match(body, "Name of taxon\n\n(.*)") |>
+    name = stringr::str_match(body, "Name of taxon[\r|\n]*(×*\\w+)") |>
              magrittr::extract(, 2),
-    rank = stringr::str_match(body, "Rank of taxon\n\n(.*)") |>
+    rank = stringr::str_match(body, "Rank of taxon[\r|\n]*(\\w+)[\r|\n]*") |>
              magrittr::extract(, 2),
     no_species = stringr::str_match(
-      body, "number of species affected\n\n(.*)") |>
+      body, "number of species affected[\r|\n]*(.*)") |>
        magrittr::extract(, 2),
-    description = stringr::str_match(body, "Description of change\n\n(.*)") |>
-      magrittr::extract(, 2)
+    description = stringr::str_match(
+      body, "Description of change[\r|\n]*(.*)") |>
+        magrittr::extract(, 2)
   ) |>
     dplyr::select(-body)
 }
