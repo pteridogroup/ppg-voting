@@ -5,7 +5,11 @@ check_ballot <- function(
   # Load ballot ----
   ballot <- googlesheets4::read_sheet(ballot_file) |>
     dplyr::rename(timestamp = Timestamp, email = `Email Address`) |>
-    dplyr::mutate(email = tolower(email)) |>
+    dplyr::mutate(
+      email = tolower(email),
+      # Automatically fix typo in email address "ocm" instead of "com"
+      email = stringr::str_replace_all(email, "\\.ocm$", ".com")
+    ) |>
     # Convert time stamp to Greenwich time (same as UTC)
     dplyr::mutate(timestamp = stringr::str_remove(timestamp, " GMT\\+9")) |>
     dplyr::mutate(
@@ -13,7 +17,10 @@ check_ballot <- function(
         lubridate::hours(9)
     ) |>
     # Add voting cutoff
-    dplyr::mutate(cutoff = lubridate::ymd_hms(ballot_cutoff, tz = "Greenwich"))
+    dplyr::mutate(
+      cutoff = lubridate::ymd_hms(ballot_cutoff, tz = "Greenwich")) |>
+    assertr::assert(assertr::not_na, cutoff)
+
 
   # Load and format email list -----
 
@@ -26,12 +33,19 @@ check_ballot <- function(
   # so that each name may have multiple email addresses
   ppg_emails <-
     ppg_emails |>
-    dplyr::select(name, email = primary) |>
+    dplyr::select(name, email = primary_our_ppg) |>
     dplyr::bind_rows(
-      dplyr::select(ppg_emails, name, email = secondary)
+      dplyr::select(ppg_emails, name, email = email_2)
+    ) |>
+    dplyr::bind_rows(
+      dplyr::select(ppg_emails, name, email = email_3)
     ) |>
     dplyr::filter(!is.na(email)) |>
-    dplyr::mutate(email = tolower(email)) |>
+    dplyr::mutate(
+      email = tolower(email),
+      # Automatically fix typo in email address "ocm" instead of "com"
+      email = stringr::str_replace_all(email, "\\.ocm$", ".com")
+    ) |>
     unique() |>
     assertr::assert(assertr::is_uniq, email) |>
     assertr::assert(assertr::not_na, name)

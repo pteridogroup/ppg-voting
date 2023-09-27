@@ -5,10 +5,10 @@ library(glue)
 source("R/functions.R")
 
 # Set variables - change this each time ballot is tallied
-ballot_number <- "2"
-vote_period <- "August 2023"
-ballot_cutoff <- "2023-08-31 23:59:50"
-ballot_file <- "https://docs.google.com/spreadsheets/d/1HiJP3RmxTDVJy14KPx4wsn2MLgYwdrkYmCf2ac_tvMo/edit?usp=sharing" # nolint
+ballot_number <- "3"
+vote_period <- "September 2023"
+ballot_cutoff <- "2023-09-30 23:59:50"
+ballot_file <- "https://docs.google.com/spreadsheets/d/1oiSeReaWsSJn4AA17pRP9rRGdE4i_0Zo-kvokudlAXg/edit?usp=sharing" # nolint
 
 # Check ballots
 ballot_checked <- check_ballot(
