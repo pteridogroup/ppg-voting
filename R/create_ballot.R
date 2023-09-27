@@ -52,6 +52,7 @@ description <- paste(
   glue("You may vote as many times as you want until the deadline, {voting_deadline}. Only your most recent vote will be counted."),
   "No votes cast after the deadline will be counted.",
   "Your vote will only be counted if the email address you entered matches your email address in the PPG mailing list.",
+  "Please double check to make sure you are using the email address that is registered on the PPG mailing list, not another email address.",
   sep = "\\n\\n"
 )
 
