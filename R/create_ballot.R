@@ -7,14 +7,14 @@ source("R/functions.R")
 
 # Set variables for this ballot period
 # 1 month for submission + 1 month for discussion + 1 month for voting
-ballot_number <- "3"
-submission_period <- "July 2023"
-discussion_period <- "August 2023"
-voting_period <- "September 2023"
-voting_deadline <- "11:59PM on September 31, 2023 UTC+00:00"
+ballot_number <- "4"
+submission_period <- "August 2023"
+discussion_period <- "September 2023"
+voting_period <- "October 2023"
+voting_deadline <- "11:59PM on October 31, 2023 UTC+00:00"
 # cutoff should bracket submission period
-cutoff_start <- ymd("2023-06-30")
-cutoff_end <- ymd("2023-08-01")
+cutoff_start <- ymd("2023-07-31")
+cutoff_end <- ymd("2023-09-01")
 
 # Download list of issues (proposals)
 issues <- fetch_issues("pteridogroup/ppg")
