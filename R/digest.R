@@ -45,7 +45,7 @@ digest_body <- c(
     "to PPG (https://github.com/pteridogroup/ppg). It is sent to everyone",
     "on the PPG mailing list once per week. If you do not wish to receive",
     "it or have any questions, please contact Eric Schuettpelz",
-    "(schuettpelze@si.edu).</p>",
+    "(schuettpelze@si.edu) or Joel Nitta (joelnitta@gmail.com).</p>",
     "<p>Only proposals that have not yet been decided are shown.",
     "Note that numbering of proposals is unique, but not consecutive",
     "(some numbers may be skipped).</p>",

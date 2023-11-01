@@ -239,3 +239,24 @@ proposal_df2txt <- function(proposals, status_search) {
     return(text_compact)
   }
 }
+
+next_month <- function(month) {
+  month %>% 
+    lubridate::my() %>%
+    magrittr::add(months(1)) %>%
+    format("%B %Y")
+}
+
+make_deadline <- function(month) {
+  month %>%
+    # Parse the month to a date
+    lubridate::my() %>%
+    # Find the last day of the month 
+    ceiling_date("month") %>%
+    magrittr::subtract(days(1)) %>%
+    # Set time to 11:59PM
+    update(hours = 23, minutes = 59, seconds = 59) %>%
+    # Format the date to the desired output
+    format("11:59PM on %B %d, %Y %Z%z") %>%
+    str_replace_all("([0-9]{2})([0-9]{2})$", "\\1:\\2")
+}
