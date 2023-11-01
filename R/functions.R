@@ -90,9 +90,9 @@ tally_votes <- function(ballot_checked) {
     dplyr::mutate(percent = round(percent, 1))
 }
 
-format_tally <- function(tally_final, ballot_number, vote_period) {
+pivot_tally <- function(votes_tally, ballot_number, vote_period) {
   tally_n <-
-    tally_final |>
+    votes_tally |>
     tidyr::pivot_wider(
       names_from = response, values_from = n, id_cols = proposal
     ) |>
@@ -100,7 +100,7 @@ format_tally <- function(tally_final, ballot_number, vote_period) {
     dplyr::rename(no_n = No, yes_n = Yes)
 
   tally_p <-
-    tally_final |>
+    votes_tally |>
     tidyr::pivot_wider(
       names_from = response, values_from = percent, id_cols = proposal
     ) |>
@@ -113,13 +113,70 @@ format_tally <- function(tally_final, ballot_number, vote_period) {
     dplyr::mutate(
       min_to_pass = round((2 / 3) * total, 0),
       result = dplyr::if_else(yes_n > min_to_pass, "passes", "does not pass")
-    ) |>
+    ) %>%
+    ungroup()
+}
+
+format_tally_github <- function(votes_tally, ballot_number, vote_period) {
+   pivot_tally(votes_tally, ballot_number, vote_period) |>
     dplyr::mutate(
       text = glue::glue(
-        "This proposal was voted on during PPG Ballot {ballot_number} (voting period {vote_period}). A total of {total} votes were cast. There were {yes_n} 'Yes' votes ({yes_p}%) and {no_n} 'No' votes ({no_p}%). The proposal {result}." # nolint
+        "This proposal was voted on during PPG Ballot {ballot_number} \\
+        (voting period {vote_period}). A total of {total} votes were cast. \\
+        There were {yes_n} 'Yes' votes ({yes_p}%) and {no_n} 'No' votes \\
+        ({no_p}%). The proposal {result}."
       )
     ) |>
     dplyr::select(proposal, text)
+}
+
+format_tally_email <- function(
+  votes_tally, ballot_number, vote_period, issue_nums) {
+  
+  repo <- "https://github.com/pteridogroup/ppg/issues/"
+
+  pivot_tally(votes_tally, ballot_number, vote_period) |>
+    dplyr::left_join(
+      issue_nums, by = "proposal"
+    ) |>
+    dplyr::mutate(
+      text = glue::glue(
+        "<li><a href = \"{repo}{num}\">{num}. {proposal}</a>: {yes_n} 'Yes' \\
+        votes ({yes_p}%) and {no_n} 'No' votes ({no_p}%). \\
+        The proposal {result}."
+      )
+    ) %>%
+    arrange(desc(num)) %>%
+    pull(text) %>%
+    paste(collapse = "")
+}
+
+format_bad_time_email <- function(bad_time) {
+  if (nrow(bad_time) == 0) {
+    return("")
+  }
+  # Get num of bad times
+  n_bad_time <- nrow(bad_time)
+  # Formatting
+  n_bad_time_e <- english::english(n_bad_time)
+  cutoff <- bad_time %>%
+    select(cutoff) %>%
+    unique() %>%
+    pull(cutoff) %>%
+    format(., "%Y-%m-%d %H:%M:%S %Z")
+
+  if (n_bad_time == 1) {
+    res <- glue::glue(
+      "<p>There was one vote cast after the deadline ({cutoff}) that could not \\
+      be counted. Please be sure to vote on time.</p>"
+    )
+  } else if (n_bad_time > 1) {
+    res <- glue::glue(
+      "<p>There were {n_bad_time_e} votes cast after the deadline ({cutoff}) \\
+      that could not be counted. Please be sure to vote on time.</p>"
+    )
+  } 
+  return(res)
 }
 
 # Extract useful information to dataframe

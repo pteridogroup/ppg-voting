@@ -1,5 +1,6 @@
 library(tidyverse)
 library(glue)
+library(gmailr)
 
 # Load custom functions
 source("R/functions.R")
@@ -18,13 +19,20 @@ ballot_checked <- check_ballot(
   email_file = "https://docs.google.com/spreadsheets/d/1vxlmf8QPndiE6dIeDcjoFT7GA3ZE4pSc_Z1raf4iuwA/edit?usp=sharing" # nolint
 )
 
+# Only for Ballot #4: load issue numbers
+# TODO: next time, include issue number in Google Form output
+issue_nums <- read_csv("data/ballot-4_issues.csv") %>%
+  select(num, proposal)
+
 # Inspect ballots that fail any checks:
 # - ballots not passing email check (email not in list)
-ballot_checked |>
+bad_emails <-
+  ballot_checked |>
   filter(email_check == FALSE)
 
 # - ballots not passing time check (submitted after deadline)
-ballot_checked |>
+bad_time <-
+  ballot_checked |>
   filter(time_check == FALSE)
 
 # - ballots not passing name check (same person submitted multiple times)
@@ -40,5 +48,52 @@ votes_tally |>
   write_csv(glue("results/ballot-{ballot_number}_results.csv"))
 
 # Format tally results for posting to GitHub
-format_tally(votes_tally, ballot_number, vote_period) |>
+# TODO: Add Issue number for easy lookup
+# TODO: Automate commenting, renaming subject, and closing
+format_tally_github(votes_tally, ballot_number, vote_period) |>
   write_csv(glue("results/ballot-{ballot_number}_results_text.csv"))
+
+# Format email
+vote_results_email_list <- format_tally_email(
+  votes_tally, ballot_number, vote_period, issue_nums) 
+
+vote_results_email <-
+  gm_mime() %>%
+  gm_to("ourPPG@googlegroups.com") %>%
+  gm_from("ourPPG@googlegroups.com") %>%
+  gm_subject(glue("PPG Ballot {ballot_number} Results")) %>%
+  gm_html_body(
+    glue(
+      "<p><b>PPG Ballot {ballot_number} Results (Voting Period {vote_period})</b></p>",
+      "<p>This is an automated email summarizing the results of voting on \\
+      taxonomic proposals submitted to PPG \\
+      (https://github.com/pteridogroup/ppg). It is sent to everyone on \\
+      the PPG mailing list once per month. If you do not wish to receive it \\
+      or have any questions, please contact Eric Schuettpelz \\
+      (schuettpelze@si.edu) or Joel Nitta (joelnitta@gmail.com).</p>",
+      "<p>Please note the following:</p> \\
+      <ul> \\
+      <li>Numbering of proposals is unique, but not consecutive (some \\
+      numbers may be skipped). \\
+      <li>A 2/3 majority is required to pass \\
+      </ul>",
+      "<p>DO NOT REPLY TO THIS EMAIL</br>; no response will be given.</p><hr>",
+      "<ul>{vote_results_email_list}</ul>",
+      "{format_bad_time_email(bad_time)}",
+      "<p>Thank you very much for your participation in PPG!</p>"
+      )
+  )
+
+# Authenticate email server
+options(gargle_oauth_cache = ".secrets")
+secret_json <- list.files(
+  ".secrets", pattern = "client_secret.*json", full.names = TRUE)
+gm_auth_configure(path = secret_json)
+gm_oauth_client()
+gm_auth("pteridogroup.no.reply@gmail.com")
+
+# Verify it looks correct, i.e. look at your Gmail drafts in the browser
+gm_create_draft(vote_results_email) # nolint
+
+# or just send the existing MIME message
+# gm_send_message(digest_email)
