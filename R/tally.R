@@ -4,6 +4,7 @@ library(gmailr)
 
 # Load custom functions
 source("R/functions.R")
+source("R/draft_ppg_results_email.R")
 
 # Set variables - change this each time ballot is tallied
 ballot_number <- "5"
@@ -40,46 +41,7 @@ votes_tally |>
 format_tally_github(votes_tally, ballot_number, vote_period) |>
   write_csv(glue("results/ballot-{ballot_number}_results_text.csv"))
 
-# Format email
-vote_results_email_list <- format_tally_email(
-  votes_tally, ballot_number, vote_period) 
+# Draft email
+draft_ppg_results_email(votes_tally, ballot_number, vote_period)
 
-vote_results_email <-
-  gm_mime() %>%
-  gm_to("ourPPG@googlegroups.com") %>%
-  gm_from("ourPPG@googlegroups.com") %>%
-  gm_subject(glue("PPG Ballot {ballot_number} Results")) %>%
-  gm_html_body(
-    glue(
-      "<p><b>PPG Ballot {ballot_number} Results (Voting Period {vote_period})</b></p>",
-      "<p>This is an automated email summarizing the results of voting on \\
-      taxonomic proposals submitted to PPG \\
-      (https://github.com/pteridogroup/ppg). It is sent to everyone on \\
-      the PPG mailing list once per month. If you do not wish to receive it \\
-      or have any questions, please contact Eric Schuettpelz \\
-      (schuettpelze@si.edu) or Joel Nitta (joelnitta@gmail.com).</p>",
-      "<p>Please note the following:</p> \\
-      <ul> \\
-      <li>Numbering of proposals is unique, but not consecutive (some \\
-      numbers may be skipped). \\
-      <li>A 2/3 majority is required to pass \\
-      </ul>",
-      "<p>DO NOT REPLY TO THIS EMAIL</br>; no response will be given.</p><hr>",
-      "<ul>{vote_results_email_list}</ul>",
-      "<p>Thank you very much for your participation in PPG!</p>"
-      )
-  )
-
-# Authenticate email server
-options(gargle_oauth_cache = ".secrets")
-secret_json <- list.files(
-  ".secrets", pattern = "client_secret.*json", full.names = TRUE)
-gm_auth_configure(path = secret_json)
-gm_oauth_client()
-gm_auth("pteridogroup.no.reply@gmail.com")
-
-# Verify it looks correct, i.e. look at your Gmail drafts in the browser
-gm_create_draft(vote_results_email) # nolint
-
-# or just send the existing MIME message
-# gm_send_message(digest_email)
+# Open pteridogroup.no.reply@gmail.com account, check drafts, and send

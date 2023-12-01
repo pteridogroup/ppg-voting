@@ -1,4 +1,3 @@
-
 #' Draft an email announcing a new PPG Ballot
 #'
 #' Requires that the pteridogroup.no.reply@gmail.com account has been
