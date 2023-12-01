@@ -6,14 +6,15 @@
     "rlang",
     "languageserver",
     "reprex",
-    "mdlincoln/docthis",
-    "vetiver"
+    "mdlincoln/docthis"
   ],
   "package.dependency.fields": [
     "Imports",
     "Depends",
     "LinkingTo"
   ],
+  "ppm.enabled": null,
+  "ppm.ignored.urls": [],
   "r.version": null,
   "snapshot.type": "implicit",
   "use.cache": true,
