@@ -247,8 +247,19 @@ next_month <- function(month) {
     format("%B %Y")
 }
 
-make_deadline <- function(month) {
-  month %>%
+
+#' Make a deadline for a PPG ballot
+#'
+#' @param month Month (and year) of the voting period, ex: "October 2023".
+#' @param timezone Timezone of the deadline.
+#' @param for_google Logical; should this be formatted for pasting into a
+#' Google script?.
+#'
+#' @return String
+make_deadline <- function(month, timezone = "UTC", for_google = FALSE) {
+
+  deadline <-
+    month %>%
     # Parse the month to a date
     lubridate::my() %>%
     # Find the last day of the month 
@@ -256,7 +267,17 @@ make_deadline <- function(month) {
     magrittr::subtract(days(1)) %>%
     # Set time to 11:59PM
     update(hours = 23, minutes = 59, seconds = 59) %>%
-    # Format the date to the desired output
-    format("11:59PM on %B %d, %Y %Z%z") %>%
-    str_replace_all("([0-9]{2})([0-9]{2})$", "\\1:\\2")
+    # Specify timezone. First set default to UTC, then convert from there
+    with_tz("UTC") %>%
+    with_tz(timezone)
+
+  # Format the date to the desired output
+  if (for_google) {
+    deadline <- format(deadline, "%Y-%m-%d %H:%M")
+  }
+  if (!for_google) {
+    deadline <- format(deadline, "%l:%M%p on %B %e, %Y %Z")
+  }
+
+  stringr::str_squish(deadline)
 }

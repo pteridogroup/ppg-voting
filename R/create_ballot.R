@@ -8,14 +8,14 @@ library(gmailr)
 source("R/functions.R")
 
 # Set variables for this ballot period
-ballot_number <- "5"
-submission_period <- "September 2023"
+ballot_number <- "6"
+submission_period <- "October 2023"
 
 # Rest of variables are set automatically
 # 1 month for submission + 1 month for discussion + 1 month for voting
 discussion_period <- next_month(submission_period)
 voting_period <- next_month(discussion_period)
-voting_deadline <- make_deadline(voting_period)
+voting_deadline <- make_deadline(voting_period, "UTC")
 # cutoff should bracket submission period
 # e.g., for September, start = 8/31, end = 10/1
 cutoff_start <- submission_period %>%
@@ -68,7 +68,6 @@ description <- paste(
   glue(
     "You may vote as many times as you want until the deadline, \\
     {voting_deadline}. Only your most recent vote will be counted."),
-  "No votes cast after the deadline will be counted.",
   glue(
     "Your vote will only be counted if the email address you entered matches \\
     your email address in the PPG mailing list. \\
@@ -86,9 +85,10 @@ function createForm() {
    var form = FormApp.create(item)
        .setTitle(item)
        .setDescription("[description]");
-
+   // Set the form to collect email addresses
+       form.setCollectEmail(true);
    // single line text field
-   item = "GitHub username";
+   item = "GitHub username (optional)";
    form.addTextItem()
        .setTitle(item)
        .setRequired(false);
@@ -109,15 +109,35 @@ write_lines(
 # Click, "save", then "run", and open newly generated form in Google Forms
 #
 # Additional settings in Google Forms:
-# Set "Collect email addresses" to "Responder input"
 # Set "Send responders a copy of their response" to "Always"
 #
 # Reference youtube video: https://www.youtube.com/watch?v=L33hMxuoFtM
 
+# Also set a closing timer to automatically close form:
+# (tutorial https://web-breeze.net/en/auto-close-google-forms/)
+
+# Will need to set deadline in local time (e.g, Japan), so check this first:
+# Japan = GMT+9 # nolint
+make_deadline(voting_period, "Japan", for_google = TRUE)
+
+# - Open the new form
+# - From the form menu, click "Script Editor"
+# - Copy and paste the code from `close_form.js` in this repo
+# - Save the script
+# - Hit the "Run" button to test and authorize (will close form)
+# - Re-open form
+# - Set a timer to run the script
+#  - Click "Triggers"
+#  - Click "Add trigger"
+#    - Set "event source" to "Time-driven"
+#    - Set "type of time based trigger" to "Specific date and time"
+#    - Enter deadline, NOTING THE TIME ZONE
+#    - Save
+
 # Send email ----
 
 # Set form URL after preparing form
-form_url <- "https://forms.gle/Wdg53x23FzbSHxts6"
+form_url <- "https://forms.gle/u67wi33ucE6m364q7"
 
 # Generate email text
 ballot_announce_email <-
