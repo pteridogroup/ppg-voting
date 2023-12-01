@@ -1,6 +1,5 @@
 check_ballot <- function(
     ballot_file,
-    ballot_cutoff,
     email_file) {
   # Load ballot ----
   ballot <- googlesheets4::read_sheet(ballot_file) |>
@@ -117,15 +116,19 @@ format_tally_github <- function(votes_tally, ballot_number, vote_period) {
 }
 
 format_tally_email <- function(
-  votes_tally, ballot_number, vote_period, issue_nums) {
+  votes_tally, ballot_number, vote_period) {
   
   repo <- "https://github.com/pteridogroup/ppg/issues/"
 
   pivot_tally(votes_tally, ballot_number, vote_period) |>
-    dplyr::left_join(
-      issue_nums, by = "proposal"
-    ) |>
+    separate_wider_delim(
+      cols = "proposal",
+      delim = ": ",
+      too_many = "merge",
+      names = c("num", "proposal")
+    ) %>%
     dplyr::mutate(
+      num = parse_number(num),
       text = glue::glue(
         "<li><a href = \"{repo}{num}\">{num}. {proposal}</a>: {yes_n} 'Yes' \\
         votes ({yes_p}%) and {no_n} 'No' votes ({no_p}%). \\

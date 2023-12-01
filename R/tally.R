@@ -13,15 +13,9 @@ ballot_file <- "https://docs.google.com/spreadsheets/d/1mnKdEqd5wFlnIdWzlj9UEq6G
 # Check ballots
 ballot_checked <- check_ballot(
   ballot_file,
-  ballot_cutoff,
   # should be a URL to PPG2 email list on Google Sheets
   email_file = "https://docs.google.com/spreadsheets/d/1vxlmf8QPndiE6dIeDcjoFT7GA3ZE4pSc_Z1raf4iuwA/edit?usp=sharing" # nolint
 )
-
-# Only for Ballot #4: load issue numbers
-# TODO: next time, include issue number in Google Form output
-issue_nums <- read_csv("data/ballot-4_issues.csv") %>%
-  select(num, proposal)
 
 # Inspect ballots that fail any checks:
 # - ballots not passing email check (email not in list)
@@ -42,14 +36,13 @@ votes_tally |>
   write_csv(glue("results/ballot-{ballot_number}_results.csv"))
 
 # Format tally results for posting to GitHub
-# TODO: Add Issue number for easy lookup
 # TODO: Automate commenting, renaming subject, and closing
 format_tally_github(votes_tally, ballot_number, vote_period) |>
   write_csv(glue("results/ballot-{ballot_number}_results_text.csv"))
 
 # Format email
 vote_results_email_list <- format_tally_email(
-  votes_tally, ballot_number, vote_period, issue_nums) 
+  votes_tally, ballot_number, vote_period) 
 
 vote_results_email <-
   gm_mime() %>%
