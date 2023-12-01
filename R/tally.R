@@ -6,10 +6,9 @@ library(gmailr)
 source("R/functions.R")
 
 # Set variables - change this each time ballot is tallied
-ballot_number <- "4"
-vote_period <- "October 2023"
-ballot_cutoff <- "2023-10-31 23:59:59"
-ballot_file <- "https://docs.google.com/spreadsheets/d/1VNzrNpcNwLrP2d6VG56F76Siq8UzwPq618uV8WkOnJU/edit?usp=sharing" # nolint
+ballot_number <- "5"
+vote_period <- "November 2023"
+ballot_file <- "https://docs.google.com/spreadsheets/d/1mnKdEqd5wFlnIdWzlj9UEq6Gc3TgeeCM9YGpy_OCr54/edit?usp=sharing" # nolint
 
 # Check ballots
 ballot_checked <- check_ballot(
@@ -29,11 +28,6 @@ issue_nums <- read_csv("data/ballot-4_issues.csv") %>%
 bad_emails <-
   ballot_checked |>
   filter(email_check == FALSE)
-
-# - ballots not passing time check (submitted after deadline)
-bad_time <-
-  ballot_checked |>
-  filter(time_check == FALSE)
 
 # - ballots not passing name check (same person submitted multiple times)
 # This is actually OK since on the most recent vote will be counted.
@@ -79,7 +73,6 @@ vote_results_email <-
       </ul>",
       "<p>DO NOT REPLY TO THIS EMAIL</br>; no response will be given.</p><hr>",
       "<ul>{vote_results_email_list}</ul>",
-      "{format_bad_time_email(bad_time)}",
       "<p>Thank you very much for your participation in PPG!</p>"
       )
   )

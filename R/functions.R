@@ -9,18 +9,7 @@ check_ballot <- function(
       email = tolower(email),
       # Automatically fix typo in email address "ocm" instead of "com"
       email = stringr::str_replace_all(email, "\\.ocm$", ".com")
-    ) |>
-    # Convert time stamp to Greenwich time (same as UTC)
-    dplyr::mutate(timestamp = stringr::str_remove(timestamp, " GMT\\+9")) |>
-    dplyr::mutate(
-      timestamp = lubridate::ymd_hms(timestamp, tz = "Greenwich") +
-        lubridate::hours(9)
-    ) |>
-    # Add voting cutoff
-    dplyr::mutate(
-      cutoff = lubridate::ymd_hms(ballot_cutoff, tz = "Greenwich")) |>
-    assertr::assert(assertr::not_na, cutoff)
-
+    )
 
   # Load and format email list -----
 
@@ -58,8 +47,6 @@ check_ballot <- function(
       by = "email"
     ) |>
     dplyr::mutate(email_check = !is.na(name)) |>
-    # Add check that all emails pass time stamp cutoff
-    dplyr::mutate(time_check = timestamp < cutoff) |>
     # Add check for duplicated names of submitters
     # only keep most recent vote per person
     dplyr::arrange(name, dplyr::desc(timestamp)) |>
@@ -70,13 +57,12 @@ tally_votes <- function(ballot_checked) {
   ballot_final <-
     ballot_checked |>
     dplyr::filter(email_check == TRUE) |>
-    dplyr::filter(time_check == TRUE) |>
     dplyr::filter(name_check == TRUE) |>
     dplyr::select(-dplyr::contains("check"))
 
   # Tally votes
   ballot_final |>
-    dplyr::select(-timestamp, -email, -`GitHub username`, -cutoff, -name) |>
+    dplyr::select(-timestamp, -email, -`GitHub username (optional)`, -name) |>
     tidyr::pivot_longer(
       names_to = "proposal", values_to = "response", tidyselect::everything()
     ) |>
@@ -149,34 +135,6 @@ format_tally_email <- function(
     arrange(desc(num)) %>%
     pull(text) %>%
     paste(collapse = "")
-}
-
-format_bad_time_email <- function(bad_time) {
-  if (nrow(bad_time) == 0) {
-    return("")
-  }
-  # Get num of bad times
-  n_bad_time <- nrow(bad_time)
-  # Formatting
-  n_bad_time_e <- english::english(n_bad_time)
-  cutoff <- bad_time %>%
-    select(cutoff) %>%
-    unique() %>%
-    pull(cutoff) %>%
-    format(., "%Y-%m-%d %H:%M:%S %Z")
-
-  if (n_bad_time == 1) {
-    res <- glue::glue(
-      "<p>There was one vote cast after the deadline ({cutoff}) that could not \\
-      be counted. Please be sure to vote on time.</p>"
-    )
-  } else if (n_bad_time > 1) {
-    res <- glue::glue(
-      "<p>There were {n_bad_time_e} votes cast after the deadline ({cutoff}) \\
-      that could not be counted. Please be sure to vote on time.</p>"
-    )
-  } 
-  return(res)
 }
 
 # Extract useful information to dataframe
