@@ -7,9 +7,9 @@ source("R/functions.R")
 source("R/draft_ppg_results_email.R")
 
 # Set variables - change this each time ballot is tallied
-ballot_number <- "6"
-vote_period <- "December 2023"
-ballot_file <- "https://docs.google.com/spreadsheets/d/1EJnhNJku4IntwQ0sy-bAPoIkuoAgfGxoytNVVDnW57U/edit?usp=sharing" # nolint
+ballot_number <- "7"
+vote_period <- "January 2024"
+ballot_file <- "https://docs.google.com/spreadsheets/d/1bAm6K41vO5TYRR6tI8IqYqrgpHxeJF7h6_gtgw-icVY/edit?usp=sharing" # nolint
 
 # Check ballots
 ballot_checked <- check_ballot(
