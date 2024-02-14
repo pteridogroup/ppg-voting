@@ -141,10 +141,10 @@ format_tally_email <- function(
 }
 
 # Extract useful information to dataframe
-fetch_issues <- function(repo) {
+fetch_issues <- function(repo, n_max = 1000) {
 
   issues_json <-
-    glue::glue("https://api.github.com/repos/{repo}/issues?state=all") |>
+    glue::glue("https://api.github.com/repos/{repo}/issues?state=all&page=1&per_page={n_max}") |>
     jsonlite::fromJSON()
 
   # Create initial tibble of issues (may include PRs)
@@ -157,6 +157,10 @@ fetch_issues <- function(repo) {
     state = issues_json$state,
     body = issues_json$body
   )
+
+  if (nrow(fetch_issues) == n_max) {
+    stop("Maximum number of issues fetched; increase n_max")
+  }
 
   # If any PRs exist, remove them
   if (!is.null(issues_json$draft)) {
