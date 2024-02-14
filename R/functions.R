@@ -158,7 +158,7 @@ fetch_issues <- function(repo, n_max = 1000) {
     body = issues_json$body
   )
 
-  if (nrow(fetch_issues) == n_max) {
+  if (nrow(issues_df) == n_max) {
     stop("Maximum number of issues fetched; increase n_max")
   }
 
