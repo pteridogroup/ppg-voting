@@ -7,7 +7,9 @@ check_ballot <- function(
     dplyr::mutate(
       email = tolower(email),
       # Automatically fix typo in email address "ocm" instead of "com"
-      email = stringr::str_replace_all(email, "\\.ocm$", ".com")
+      # or "combr" instead of "com"
+      email = stringr::str_replace_all(email, "\\.ocm$", ".com") %>%
+        stringr::str_replace_all("\\.combr$", ".com")
     )
 
   # Load and format email list -----

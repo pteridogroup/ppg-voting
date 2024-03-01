@@ -10,8 +10,8 @@ source("R/generate_form_script.R")
 source("R/draft_ppg_ballot_email.R")
 
 # 0: Set variables for this ballot ---
-ballot_number <- "8"
-submission_period <- "December 2023"
+ballot_number <- "9"
+submission_period <- "January 2024"
 discussion_period <- next_month(submission_period)
 voting_period <- next_month(discussion_period)
 
@@ -49,12 +49,13 @@ make_deadline(voting_period, "Japan", for_google = TRUE)
 # - Save the script
 # - Hit the "Run" button to test and authorize (will close form)
 # - Re-open form
-# - Set a timer to run the script
-#  - Click "Triggers"
-#  - Click "Add trigger"
+# - Set a timer to run the script (OK the warnings)
+#  - Click "Triggers" (the clock icon)
+#  - Click "Add trigger" (bottom RHC)
 #    - Set "event source" to "Time-driven"
 #    - Set "type of time based trigger" to "Specific date and time"
-#    - Enter deadline, NOTING THE TIME ZONE
+#    - Enter deadline that you checked with make_deadline()
+#      NOTING THE TIME ZONE (Japan is GMT+9:00)
 #    - Save
 #
 # Reference tutorial: https://web-breeze.net/en/auto-close-google-forms/
@@ -67,7 +68,7 @@ make_deadline(voting_period, "Japan", for_google = TRUE)
 draft_ppg_ballot_email(
   ballot_number = ballot_number,
   submission_period = submission_period,
-  form_url = "https://forms.gle/peFd5ERC7wuzxac28" # From form created in Step 2
+  form_url = "https://forms.gle/pUh5tLHGPwDAvb5v8" # From form created in Step 2
 )
 
 # Open pteridogroup.no.reply@gmail.com account, check drafts, and send
