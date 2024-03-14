@@ -7,8 +7,9 @@ library(gmailr)
 # Load custom functions
 source("R/functions.R")
 
-# Get current day in UTC
+# Get current day and month in UTC
 current_day <- today("UTC")
+current_month <- floor_date(current_day, "month")
 
 # Filter to proposals to include in email, add status and text to print
 proposals <-
@@ -16,17 +17,18 @@ proposals <-
   filter(state == "open") |>
   # Only include taxonomic proposals (should have an entry for rank)
   filter(!is.na(rank)) |>
-  mutate(created_at = ymd_hms(created_at, tz = "UTC")) |>
   mutate(
+    created_at = ymd_hms(created_at, tz = "UTC"),
+    created_month = floor_date(created_at, "month"),
     status = case_when(
-      year(created_at) < year(current_day) - 2 ~ "Older",
-      month(created_at) < month(current_day) - 2 ~ "Older",
-      month(created_at) == month(current_day) - 2 ~ "On current ballot",
-      month(created_at) == month(current_day) - 1 ~
+      created_month == current_month ~ "Submitted this month",
+      created_month == current_month %m-% months(1) ~
         "Submitted last month (to go in next ballot)",
-      month(created_at) == month(current_day) ~ "Submitted this month"
+      created_month == current_month %m-% months(2) ~
+        "On current ballot",
+      created_month < current_month %m-% months(2) ~ "Older"
     )
-  ) |>
+    ) |>
   assert(not_na, status) |>
   filter(status != "Older") |>
   arrange(desc(created_at)) |>
