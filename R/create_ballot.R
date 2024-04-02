@@ -10,8 +10,8 @@ source("R/generate_form_script.R")
 source("R/draft_ppg_ballot_email.R")
 
 # 0: Set variables for this ballot ---
-ballot_number <- "9"
-submission_period <- "January 2024"
+ballot_number <- "10"
+submission_period <- "February 2024"
 discussion_period <- next_month(submission_period)
 voting_period <- next_month(discussion_period)
 
@@ -57,6 +57,8 @@ make_deadline(voting_period, "Japan", for_google = TRUE)
 #    - Enter deadline that you checked with make_deadline()
 #      NOTING THE TIME ZONE (Japan is GMT+9:00)
 #    - Save
+#    - Go through authentication again, if it pops up
+#    - You should see the new trigger added to the list of triggers
 #
 # Reference tutorial: https://web-breeze.net/en/auto-close-google-forms/
 
@@ -68,7 +70,7 @@ make_deadline(voting_period, "Japan", for_google = TRUE)
 draft_ppg_ballot_email(
   ballot_number = ballot_number,
   submission_period = submission_period,
-  form_url = "https://forms.gle/pUh5tLHGPwDAvb5v8" # From form created in Step 2
+  form_url = "https://forms.gle/DrWQRSpT2MyKoDd46" # From form created in Step 2
 )
 
 # Open pteridogroup.no.reply@gmail.com account, check drafts, and send
