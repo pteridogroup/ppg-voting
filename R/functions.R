@@ -248,3 +248,20 @@ make_deadline <- function(month, timezone = "UTC", for_google = FALSE) {
 
   stringr::str_squish(deadline)
 }
+
+# Make tibble of commenters on an issue
+fetch_commenters <- function(issue_num) {
+
+  data <- gh(
+    "GET /repos/pteridogroup/ppg/issues/{issue_num}/timeline",
+    issue_num = issue_num)
+
+  commenters <- purrr::map(data, ~purrr::pluck(.x, "user", "login")) |>
+    purrr::flatten() |>
+    unlist()
+
+  tibble::tibble(
+    issue = issue_num,
+    commenter = commenters
+  )
+}
