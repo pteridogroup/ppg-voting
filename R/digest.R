@@ -21,12 +21,13 @@ proposals <-
     created_at = ymd_hms(created_at, tz = "UTC"),
     created_month = floor_date(created_at, "month"),
     status = case_when(
+      created_month < current_month %m-% months(2) ~ "Older",
+      str_detect(title, "POSTPONED") ~ "Postponed",
       created_month == current_month ~ "Submitted this month",
       created_month == current_month %m-% months(1) ~
         "Submitted last month (to go in next ballot)",
       created_month == current_month %m-% months(2) ~
-        "On current ballot",
-      created_month < current_month %m-% months(2) ~ "Older"
+        "On current ballot"
     )
     ) |>
   assert(not_na, status) |>
@@ -37,6 +38,14 @@ proposals <-
       "{number}. {title}: {url} ({year(created_at)}-{month(created_at)}-{day(created_at)})" # nolint
     )
   )
+
+# Split out postponed issues
+postponed_issues <- proposal_df2txt(proposals, "Postponed", ret_empty = "null")
+postponed_header <- if (!is.null(postponed_issues)) {
+  "<p>Postponed</p>"
+} else {
+  NULL
+}
 
 # Generate email text
 digest_subject <- glue::glue("PPG Email Digest {current_day}")
@@ -61,7 +70,9 @@ digest_body <- c(
   "<p>Proposals submitted last month (will go on next ballot)</p>",
   proposal_df2txt(proposals, "last month"),
   "<p>Proposals submitted two months ago (on current ballot)</p>",
-  proposal_df2txt(proposals, "current ballot")
+  proposal_df2txt(proposals, "current ballot"),
+  postponed_header,
+  postponed_issues
 ) |>
   paste(collapse = "")
 

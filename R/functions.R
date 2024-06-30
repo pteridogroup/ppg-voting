@@ -194,14 +194,18 @@ fetch_issues <- function(repo, n_max = 1000) {
 
 # Filter proposals to those matching a particular status string
 # and extract a single string of text to print in the email digest
-proposal_df2txt <- function(proposals, status_search) {
+proposal_df2txt <- function(proposals, status_search, ret_empty = "none") {
   text_compact <-
     proposals |>
       dplyr::filter(stringr::str_detect(status, status_search)) |>
       dplyr::pull(text) |>
       paste(collapse = "<br>")
   if (text_compact == "") {
-    return("(none)")
+    if (ret_empty == "none") {
+      return("(none)")
+    } else {
+      return(NULL)
+    }
   } else {
     return(text_compact)
   }
