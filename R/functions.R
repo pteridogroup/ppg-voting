@@ -9,7 +9,10 @@ check_ballot <- function(
       # Automatically fix typo in email address "ocm" instead of "com"
       # or "combr" instead of "com"
       email = stringr::str_replace_all(email, "\\.ocm$", ".com") %>%
-        stringr::str_replace_all("\\.combr$", ".com")
+        stringr::str_replace_all("\\.combr$", ".com") %>%
+        # typo
+        stringr::str_replace_all(
+          "dar\\.sanin\\@gmail\\.com$", "dav.sanin@gmail.com")
     )
 
   # Load and format email list -----
