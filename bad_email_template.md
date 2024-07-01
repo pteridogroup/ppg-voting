@@ -1,3 +1,5 @@
+Subject: Confirmation of email address for PPG
+
 Hello,
 
 I received a ballot for [BALLOT PERIOD] from this email address for the Pteridophyte Phylogeny Group (PPG), but I cannot find the email address in our records. Please let me know if you want to use this email address.
