@@ -181,7 +181,7 @@ fetch_issues <- function(repo, n_max = 1000) {
     dplyr::mutate(
     url = stringr::str_replace_all(
       url, "https://api.github.com/repos/", "https://github.com/"),
-    name = stringr::str_match(body, "Name of taxon[\r|\n]*(×*\\w+)") |>
+    name = stringr::str_match(body, "Name of taxon[\r|\n]*(×*.*)") |>
              magrittr::extract(, 2),
     rank = stringr::str_match(body, "Rank of taxon[\r|\n]*(\\w+)[\r|\n]*") |>
              magrittr::extract(, 2),

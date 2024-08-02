@@ -5,3 +5,4 @@ results
 *.Rproj
 .secrets
 working
+.DS_Store
