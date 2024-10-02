@@ -1,19 +1,23 @@
+fix_email <- function(data) {
+  data |>
+    dplyr::mutate(
+      # Automatically fix typos in email address
+      email = tolower(email) %>%
+        stringr::str_replace_all("\\.ocm$", ".com") %>%
+        stringr::str_replace_all("\\.combr$", ".com") %>%
+        stringr::str_replace_all(
+          "dar\\.sanin\\@gmail\\.com$", "dav.sanin@gmail.com") %>%
+        stringr::str_replace_all("\\.utexxas\\.", ".utexas.")
+    )
+}
+
 check_ballot <- function(
     ballot_file,
     email_file) {
   # Load ballot ----
   ballot <- googlesheets4::read_sheet(ballot_file) |>
     dplyr::rename(timestamp = Timestamp, email = `Email Address`) |>
-    dplyr::mutate(
-      email = tolower(email),
-      # Automatically fix typo in email address "ocm" instead of "com"
-      # or "combr" instead of "com"
-      email = stringr::str_replace_all(email, "\\.ocm$", ".com") %>%
-        stringr::str_replace_all("\\.combr$", ".com") %>%
-        # typo
-        stringr::str_replace_all(
-          "dar\\.sanin\\@gmail\\.com$", "dav.sanin@gmail.com")
-    )
+    fix_email()
 
   # Load and format email list -----
 
@@ -26,20 +30,16 @@ check_ballot <- function(
   # so that each name may have multiple email addresses
   ppg_emails <-
     ppg_emails |>
-    dplyr::select(name, email = primary_our_ppg) |>
+    dplyr::select(name, email) |>
     dplyr::bind_rows(
-      dplyr::select(ppg_emails, name, email = email_2)
+      dplyr::select(ppg_emails, name, email = secondary)
     ) |>
     dplyr::bind_rows(
-      dplyr::select(ppg_emails, name, email = email_3)
+      dplyr::select(ppg_emails, name, email = tertiary)
     ) |>
     dplyr::filter(!is.na(email)) |>
-    dplyr::mutate(
-      email = tolower(email),
-      # Automatically fix typo in email address "ocm" instead of "com"
-      email = stringr::str_replace_all(email, "\\.ocm$", ".com")
-    ) |>
     unique() |>
+    fix_email() |>
     assertr::assert(assertr::is_uniq, email) |>
     assertr::assert(assertr::not_na, name)
 
