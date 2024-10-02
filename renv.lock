@@ -1296,7 +1296,7 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.3",
+      "Version": "1.0.5",
       "Source": "Repository"
     },
     "rmarkdown": {
