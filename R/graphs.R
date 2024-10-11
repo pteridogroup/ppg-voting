@@ -6,6 +6,8 @@ source("R/functions.R")
 # Get dataframe of all isssues
 issues <- fetch_issues("pteridogroup/ppg") |>
   filter(str_detect(title, "\\[NOT VALID\\]", negate = TRUE)) |>
+  # FIXME remove when Sticheropsis issue is closed
+  filter(str_detect(title, "Sticheropsis", negate = TRUE)) |>
   mutate(status = case_when(
     str_detect(title, "\\[PASSED\\]") ~ "Passed",
     str_detect(title, "\\[NOT PASSED\\]") ~ "Not passed",
