@@ -65,11 +65,6 @@ cum_issues_complete <- cum_issues_complete %>%
 ggplot(mapping = aes(x = created_at, y = cum_count)) +
   geom_line(data = cum_issues_complete, group = 1) +
   geom_point(data = cum_issues_complete) +
-  geom_hline(data = df_goal, aes(yintercept = cum_count), linetype = 2) +
-  geom_label(
-    data = df_goal, aes(label = goal_text), size = 6, color = "darkred",
-    hjust = 1
-  ) +
   scale_x_date(date_labels = "%Y-%m", date_breaks = "1 month") +
   labs(
     title = "Cumulative count of proposals submitted to PPG",
