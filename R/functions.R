@@ -81,19 +81,37 @@ tally_votes <- function(ballot_checked) {
 }
 
 pivot_tally <- function(votes_tally, ballot_number, vote_period) {
-  tally_n <-
-    votes_tally |>
+  votes_tally_n_long <- votes_tally |>
     tidyr::pivot_wider(
       names_from = response, values_from = n, id_cols = proposal
-    ) |>
+    )
+
+  if (! "No" %in% colnames(votes_tally_n_long)) {
+    votes_tally_n_long <- dplyr::mutate(
+      votes_tally_n_long,
+      No = 0
+    )
+  }
+
+  tally_n <-
+    votes_tally_n_long |>
     dplyr::mutate(No = tidyr::replace_na(No, 0)) |>
     dplyr::rename(no_n = No, yes_n = Yes)
 
-  tally_p <-
-    votes_tally |>
+  votes_tally_p_long <- votes_tally |>
     tidyr::pivot_wider(
       names_from = response, values_from = percent, id_cols = proposal
-    ) |>
+    )
+
+  if (! "No" %in% colnames(votes_tally_p_long)) {
+    votes_tally_p_long <- dplyr::mutate(
+      votes_tally_p_long,
+      No = 0
+    )
+  }
+
+  tally_p <-
+    votes_tally_p_long |>
     dplyr::mutate(No = tidyr::replace_na(No, 0)) |>
     dplyr::rename(no_p = No, yes_p = Yes)
 
