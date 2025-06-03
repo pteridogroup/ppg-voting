@@ -10,8 +10,8 @@ source("R/generate_form_script.R")
 source("R/draft_ppg_ballot_email.R")
 
 # 0: Set variables for this ballot ---
-ballot_number <- "15"
-submission_period <- "December 2024"
+ballot_number <- "16"
+submission_period <- "April 2025"
 discussion_period <- next_month(submission_period)
 voting_period <- next_month(discussion_period)
 
@@ -70,7 +70,7 @@ make_deadline(voting_period, "Japan", for_google = TRUE)
 draft_ppg_ballot_email(
   ballot_number = ballot_number,
   submission_period = submission_period,
-  form_url = "https://forms.gle/x8Zk3jscUQ2Z325U6" # From form created in Step 2
+  form_url = "https://forms.gle/Q94jNE7tbEAc3ZqK9" # From form created in Step 2
 )
 
 # Open pteridogroup.no.reply@gmail.com account, check drafts, and send
