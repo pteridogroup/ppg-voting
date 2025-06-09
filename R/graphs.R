@@ -67,7 +67,7 @@ cum_issues_complete <- cum_issues_complete %>%
 ggplot(mapping = aes(x = created_at, y = cum_count)) +
   geom_line(data = cum_issues_complete, group = 1) +
   geom_point(data = cum_issues_complete) +
-  scale_x_date(date_labels = "%Y-%m", date_breaks = "1 month") +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "3 months") +
   labs(
     title = "Cumulative count of proposals submitted to PPG",
     y = "Number of proposals"
@@ -110,7 +110,7 @@ ggplot() +
     size = 4, color = "grey20",
     hjust = 1
   ) +
-  scale_x_date(date_labels = "%Y-%m", date_breaks = "2 month") +
+  scale_x_date(date_labels = "%Y-%m", date_breaks = "3 months") +
   scale_fill_manual(
     name = "Result",
     values = c(
