@@ -4,13 +4,13 @@ source("R/functions.R")
 
 # set color palette
 okabe_ito_cols <- c(
-  orange =	"#E69F00",
-  skyblue =	"#56B4E9",
-  bluishgreen =	"#009E73",
-  yellow =	"#F0E442",
-  blue =	"#0072B2",
-  vermillion =	"#D55E00",
-  reddishpurple =	"#CC79A7"
+  orange = "#E69F00",
+  skyblue = "#56B4E9",
+  bluishgreen = "#009E73",
+  yellow = "#F0E442",
+  blue = "#0072B2",
+  vermillion = "#D55E00",
+  reddishpurple = "#CC79A7"
 )
 
 # Download list of issues (proposals)
@@ -21,10 +21,14 @@ issues <-
   mutate(passed = str_detect(title, "\\[PASSED\\]")) %>%
   mutate(not_passed = str_detect(title, "\\[NOT PASSED\\]")) %>%
   mutate(voting = !str_detect(title, "PASSED")) %>%
-  mutate(created_at = str_remove_all(created_at, "T.*Z") %>%
-    lubridate::ymd()) %>%
-  mutate(month = lubridate::month(created_at) %>%
-    str_pad(side = "left", pad = "0", width = 2)) %>%
+  mutate(
+    created_at = str_remove_all(created_at, "T.*Z") %>%
+      lubridate::ymd()
+  ) %>%
+  mutate(
+    month = lubridate::month(created_at) %>%
+      str_pad(side = "left", pad = "0", width = 2)
+  ) %>%
   mutate(year = lubridate::year(created_at)) %>%
   mutate(year_month = paste(year, month, sep = "-"))
 
@@ -44,7 +48,8 @@ issues %>%
       str_squish()
   ) %>%
   separate_rows(name, sep = ",") %>%
-  mutate(name = str_squish(name)) %>% pull(name)  
+  mutate(name = str_squish(name)) %>%
+  pull(name)
 
 # Make plot of cumulative count of submitted proposals
 cum_issue_plot <-
@@ -70,7 +75,7 @@ cum_issue_plot <-
   labs(
     title = "Cumulative count of proposals submitted to PPG",
     y = "Number of proposals"
-  ) + 
+  ) +
   theme_gray(base_size = 22) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -88,6 +93,7 @@ issues_summary %>%
 vote_res_plot <-
   issues_summary %>%
   pivot_longer(names_to = "type", values_to = "count", -year_month) %>%
+  mutate(year_month = lubridate::ym(year_month)) %>%
   ggplot(aes(x = year_month, y = count, fill = type)) +
   geom_col(position = "dodge") +
   labs(
@@ -103,10 +109,19 @@ vote_res_plot <-
     breaks = c("passed", "not_passed", "under_vote"),
     labels = c("Passed", "Not passed", "TBD")
   ) +
+  scale_x_date(
+    date_labels = "%Y-%m",
+    date_breaks = "4 months"
+  ) +
   theme_gray(base_size = 22) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
     axis.title.x = element_blank()
   )
 
-ggsave(plot = vote_res_plot, file = "results/vote_res_plot.png")
+ggsave(
+  plot = vote_res_plot,
+  file = "results/vote_res_plot.png",
+  width = 8,
+  height = 7
+)
