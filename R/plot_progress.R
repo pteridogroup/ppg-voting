@@ -95,10 +95,11 @@ vote_res_plot <-
   pivot_longer(names_to = "type", values_to = "count", -year_month) %>%
   mutate(year_month = lubridate::ym(year_month)) %>%
   ggplot(aes(x = year_month, y = count, fill = type)) +
-  geom_col(position = "dodge") +
+  geom_col(position = "stack") +
   labs(
     title = "Results of proposals submitted to PPG",
-    y = "Number of proposals"
+    y = "Number of proposals",
+    fill = "Result"
   ) +
   scale_fill_manual(
     values = c(
@@ -113,6 +114,7 @@ vote_res_plot <-
     date_labels = "%Y-%m",
     date_breaks = "4 months"
   ) +
+  scale_y_continuous(breaks = seq(0, 10, by = 2)) +
   theme_gray(base_size = 22) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -121,7 +123,5 @@ vote_res_plot <-
 
 ggsave(
   plot = vote_res_plot,
-  file = "results/vote_res_plot.png",
-  width = 8,
-  height = 7
+  file = "results/vote_res_plot.png"
 )
