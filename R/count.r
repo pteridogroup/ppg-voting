@@ -26,15 +26,18 @@ issues |>
       str_detect(description, "into synonymy") ~ "sink",
       str_detect(description, "transferred to") ~ "sink",
       str_detect(description, "accommodate") ~ "split",
-      str_detect(description, "lump") ~ "sink"
+      str_detect(description, "lump") ~ "sink",
       .default = NA_character_
     )
   ) |>
   separate_rows(name) |>
+  filter(rank == "Genus") |>
   write_csv("~/Desktop/changes.csv")
 
 readr::read_csv("~/Desktop/changes.csv") |>
-  filter(rank == "Family")
+  filter(exclude == 0) |>
+  filter(change != "NA") |>
+  count(change)
 
 readr::read_csv("~/Desktop/changes.csv") |>
   count(rank, change) |>
