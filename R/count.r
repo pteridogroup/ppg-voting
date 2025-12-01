@@ -31,14 +31,41 @@ issues |>
     )
   ) |>
   separate_rows(name) |>
-  filter(rank == "Genus") |>
-  write_csv("~/Desktop/changes.csv")
+  filter(rank != "Genus") |>
+  write_csv("~/Desktop/change_other.csv")
 
 readr::read_csv("~/Desktop/changes.csv") |>
   filter(exclude == 0) |>
   filter(change != "NA") |>
   count(change)
 
-readr::read_csv("~/Desktop/changes.csv") |>
+readr::read_csv("~/Desktop/changes_edited.csv") |>
+  filter(change != "none") |>
+  mutate(
+    rank = factor(
+      rank,
+      levels = c("Family", "Subfamily", "Genus", "Nothogenus")
+    )
+  ) |>
   count(rank, change) |>
-  arrange(rank, change)
+  mutate(
+    effect = case_when(
+      change %in% c("conserve", "expand", "shrink", "transfer") ~ "none",
+      change == "sink" ~ "decrease",
+      change == "split" ~ "increase",
+    )
+  ) |>
+  filter(
+    change %in% c("conserve", "sink", "split", "transfer")
+  ) |>
+  mutate(
+    change = str_to_sentence(change),
+    effect = str_to_sentence(effect)
+  ) |>
+  arrange(rank, change) |>
+  select(
+    Rank = rank,
+    Change = change,
+    Effect = effect,
+    n = n
+  )
