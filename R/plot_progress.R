@@ -55,6 +55,7 @@ issues %>%
 cum_issue_plot <-
   issues %>%
   group_by(year_month) %>%
+  mutate(year_month = lubridate::ym(year_month)) %>%
   summarize(
     n = n(),
     .groups = "drop"
@@ -65,16 +66,13 @@ cum_issue_plot <-
   # geom_hline(yintercept = 80, linetype = "dashed", color = "grey30") +
   geom_line() +
   geom_point(size = 3) +
-  # annotate(
-  #   "label",
-  #   x = "2024-02",
-  #   y = 80,
-  #   label = "Goal",
-  #   size = 10,
-  #   color = "darkred") +
   labs(
     title = "Cumulative count of proposals submitted to PPG",
     y = "Number of proposals"
+  ) +
+  scale_x_date(
+    date_labels = "%Y-%m",
+    date_breaks = "4 months"
   ) +
   theme_gray(base_size = 22) +
   theme(
