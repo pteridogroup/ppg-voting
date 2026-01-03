@@ -22,8 +22,9 @@ fix_email <- function(data) {
 }
 
 check_ballot <- function(
-    ballot_file,
-    email_file) {
+  ballot_file,
+  email_file
+) {
   # Load ballot ----
   ballot <- googlesheets4::read_sheet(ballot_file) |>
     dplyr::rename(timestamp = Timestamp, email = `Email Address`) |>
@@ -78,7 +79,9 @@ tally_votes <- function(ballot_checked) {
   ballot_final |>
     dplyr::select(-timestamp, -email, -`GitHub username (optional)`, -name) |>
     tidyr::pivot_longer(
-      names_to = "proposal", values_to = "response", tidyselect::everything()
+      names_to = "proposal",
+      values_to = "response",
+      tidyselect::everything()
     ) |>
     dplyr::group_by(proposal) |>
     dplyr::count(response) |>
@@ -93,10 +96,12 @@ tally_votes <- function(ballot_checked) {
 pivot_tally <- function(votes_tally, ballot_number, vote_period) {
   votes_tally_n_long <- votes_tally |>
     tidyr::pivot_wider(
-      names_from = response, values_from = n, id_cols = proposal
+      names_from = response,
+      values_from = n,
+      id_cols = proposal
     )
 
-  if (! "No" %in% colnames(votes_tally_n_long)) {
+  if (!"No" %in% colnames(votes_tally_n_long)) {
     votes_tally_n_long <- dplyr::mutate(
       votes_tally_n_long,
       No = 0
@@ -110,10 +115,12 @@ pivot_tally <- function(votes_tally, ballot_number, vote_period) {
 
   votes_tally_p_long <- votes_tally |>
     tidyr::pivot_wider(
-      names_from = response, values_from = percent, id_cols = proposal
+      names_from = response,
+      values_from = percent,
+      id_cols = proposal
     )
 
-  if (! "No" %in% colnames(votes_tally_p_long)) {
+  if (!"No" %in% colnames(votes_tally_p_long)) {
     votes_tally_p_long <- dplyr::mutate(
       votes_tally_p_long,
       No = 0
@@ -136,7 +143,7 @@ pivot_tally <- function(votes_tally, ballot_number, vote_period) {
 }
 
 format_tally_github <- function(votes_tally, ballot_number, vote_period) {
-   pivot_tally(votes_tally, ballot_number, vote_period) |>
+  pivot_tally(votes_tally, ballot_number, vote_period) |>
     dplyr::mutate(
       text = glue::glue(
         "This proposal was voted on during PPG Ballot {ballot_number} \\
@@ -149,8 +156,10 @@ format_tally_github <- function(votes_tally, ballot_number, vote_period) {
 }
 
 format_tally_email <- function(
-  votes_tally, ballot_number, vote_period) {
-  
+  votes_tally,
+  ballot_number,
+  vote_period
+) {
   repo <- "https://github.com/pteridogroup/ppg/issues/"
 
   pivot_tally(votes_tally, ballot_number, vote_period) |>
@@ -175,9 +184,10 @@ format_tally_email <- function(
 
 # Extract useful information to dataframe
 fetch_issues <- function(repo, n_max = 1000) {
-
   issues_json <-
-    glue::glue("https://api.github.com/repos/{repo}/issues?state=all&page=1&per_page={n_max}") |>
+    glue::glue(
+      "https://api.github.com/repos/{repo}/issues?state=all&page=1&per_page={n_max}"
+    ) |>
     jsonlite::fromJSON()
 
   # Create initial tibble of issues (may include PRs)
@@ -207,19 +217,26 @@ fetch_issues <- function(repo, n_max = 1000) {
   # Format final data frame
   issues_df |>
     dplyr::mutate(
-    url = stringr::str_replace_all(
-      url, "https://api.github.com/repos/", "https://github.com/"),
-    name = stringr::str_match(body, "Name of taxon[\r|\n]*(×*.*)") |>
-             magrittr::extract(, 2),
-    rank = stringr::str_match(body, "Rank of taxon[\r|\n]*(\\w+)[\r|\n]*") |>
-             magrittr::extract(, 2),
-    no_species = stringr::str_match(
-      body, "number of species affected[\r|\n]*(.*)") |>
-       magrittr::extract(, 2),
-    description = stringr::str_match(
-      body, "Description of change[\r|\n]*(.*)") |>
+      url = stringr::str_replace_all(
+        url,
+        "https://api.github.com/repos/",
+        "https://github.com/"
+      ),
+      name = stringr::str_match(body, "Name of taxon[\r|\n]*(×*.*)") |>
+        magrittr::extract(, 2),
+      rank = stringr::str_match(body, "Rank of taxon[\r|\n]*(\\w+)[\r|\n]*") |>
+        magrittr::extract(, 2),
+      no_species = stringr::str_match(
+        body,
+        "number of species affected[\r|\n]*(.*)"
+      ) |>
+        magrittr::extract(, 2),
+      description = stringr::str_match(
+        body,
+        "Description of change[\r|\n]*(.*)"
+      ) |>
         magrittr::extract(, 2)
-  ) |>
+    ) |>
     dplyr::select(-body)
 }
 
@@ -228,9 +245,9 @@ fetch_issues <- function(repo, n_max = 1000) {
 proposal_df2txt <- function(proposals, status_search, ret_empty = "none") {
   text_compact <-
     proposals |>
-      dplyr::filter(stringr::str_detect(status, status_search)) |>
-      dplyr::pull(text) |>
-      paste(collapse = "<br>")
+    dplyr::filter(stringr::str_detect(status, status_search)) |>
+    dplyr::pull(text) |>
+    paste(collapse = "<br>")
   if (text_compact == "") {
     if (ret_empty == "none") {
       return("(none)")
@@ -243,7 +260,7 @@ proposal_df2txt <- function(proposals, status_search, ret_empty = "none") {
 }
 
 next_month <- function(month) {
-  month %>% 
+  month %>%
     lubridate::my() %>%
     magrittr::add(months(1)) %>%
     format("%B %Y")
@@ -259,12 +276,11 @@ next_month <- function(month) {
 #'
 #' @return String
 make_deadline <- function(month, timezone = "UTC", for_google = FALSE) {
-
   deadline <-
     month %>%
     # Parse the month to a date
     lubridate::my() %>%
-    # Find the last day of the month 
+    # Find the last day of the month
     ceiling_date("month") %>%
     magrittr::subtract(days(1)) %>%
     # Set time to 11:59PM
@@ -286,12 +302,12 @@ make_deadline <- function(month, timezone = "UTC", for_google = FALSE) {
 
 # Make tibble of commenters on an issue
 fetch_commenters <- function(issue_num) {
-
   data <- gh(
     "GET /repos/pteridogroup/ppg/issues/{issue_num}/timeline",
-    issue_num = issue_num)
+    issue_num = issue_num
+  )
 
-  commenters <- purrr::map(data, ~purrr::pluck(.x, "user", "login")) |>
+  commenters <- purrr::map(data, ~ purrr::pluck(.x, "user", "login")) |>
     purrr::flatten() |>
     unlist()
 
