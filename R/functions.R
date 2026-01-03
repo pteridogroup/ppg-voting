@@ -6,10 +6,18 @@ fix_email <- function(data) {
         stringr::str_replace_all("\\.ocm$", ".com") %>%
         stringr::str_replace_all("\\.combr$", ".com") %>%
         stringr::str_replace_all(
-          "dar\\.sanin\\@gmail\\.com$", "dav.sanin@gmail.com") %>%
-                stringr::str_replace_all(
-          "fittmatos\\@gmail\\.com$", "fbittmatos@gmail.com") %>%
-        stringr::str_replace_all("\\.utexxas\\.", ".utexas.")
+          "dar\\.sanin\\@gmail\\.com$",
+          "dav.sanin@gmail.com"
+        ) %>%
+        stringr::str_replace_all(
+          "fittmatos\\@gmail\\.com$",
+          "fbittmatos@gmail.com"
+        ) %>%
+        stringr::str_replace_all("\\.utexxas\\.", ".utexas.") %>%
+        stringr::str_replace_all(
+          "ralf\\.knap\\@gmail\\.com",
+          "ralf\\.knapp\\@gmail\\.com"
+        )
     )
 }
 
