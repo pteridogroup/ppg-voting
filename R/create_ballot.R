@@ -52,7 +52,7 @@ make_deadline(voting_period, "Japan", for_google = TRUE)
 draft_ppg_ballot_email(
   ballot_number = ballot_number,
   submission_period = submission_period,
-  form_url = "https://forms.gle/Zj6yz4nExcfs2J8L6" # From form created in Step 2
+  form_url = "https://forms.gle/gGe8vddaK43gPHPb9" # From form created in Step 2
 )
 
 # Open pteridogroup.no.reply@gmail.com account, check drafts, and send
