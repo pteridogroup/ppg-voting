@@ -26,8 +26,14 @@ bad_emails <-
 
 # - ballots not passing name check (same person submitted multiple times)
 # This is actually OK since on the most recent vote will be counted.
-ballot_checked |>
+fail_name_check <-
+  ballot_checked |>
   filter(name_check == FALSE)
+
+dups <-
+  ballot_checked |>
+  filter(email %in% fail_name_check$email) |>
+  arrange(email)
 
 # Filter out votes that don't pass checks and tally
 votes_tally <- tally_votes(ballot_checked)
