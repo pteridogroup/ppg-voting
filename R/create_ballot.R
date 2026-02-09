@@ -37,31 +37,12 @@ generate_form_script(
 
 # 3: Set closing timer -----
 
-# Set a closing timer to automatically close form
+# Set a closing timer to close form on deadline, set under "Publishing Options"
 #
 # Will need to set deadline in local time (e.g, Japan), so check this first:
 # Japan = GMT+9 # nolint
 # America/Los_Angeles = GMT - 7 (during Daylight savings)
 make_deadline(voting_period, "Japan", for_google = TRUE)
-
-# - Open the new form
-# - From the form menu, click "Apps Script"
-# - Copy and paste the code from `close_form.js` in this repo
-# - Save the script
-# - Hit the "Run" button to test and authorize (will close form)
-# - Re-open form
-# - Set a timer to run the script (OK the warnings)
-#  - Click "Triggers" (the clock icon)
-#  - Click "Add trigger" (bottom RHC)
-#    - Set "event source" to "Time-driven"
-#    - Set "type of time based trigger" to "Specific date and time"
-#    - Enter deadline that you checked with make_deadline()
-#      NOTING THE TIME ZONE (Japan is GMT+9:00)
-#    - Save
-#    - Go through authentication again, if it pops up
-#    - You should see the new trigger added to the list of triggers
-#
-# Reference tutorial: https://web-breeze.net/en/auto-close-google-forms/
 
 # 4: Draft email ----
 
