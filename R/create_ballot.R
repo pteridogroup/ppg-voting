@@ -10,8 +10,8 @@ source("R/generate_form_script.R")
 source("R/draft_ppg_ballot_email.R")
 
 # 0: Set variables for this ballot ---
-ballot_number <- "21"
-submission_period <- "November 2025"
+ballot_number <- "22"
+submission_period <- "December 2025"
 discussion_period <- next_month(submission_period)
 voting_period <- next_month(discussion_period)
 
