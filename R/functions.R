@@ -35,18 +35,19 @@ check_ballot <- function(
   # PPG mailing-list email is in column "email" and other emails are in column
   # "other email". Combine this into single email column.
   ppg_emails <- googlesheets4::read_sheet(email_file) |>
-    janitor::clean_names()
+    janitor::clean_names() |>
+    dplyr::mutate(name = str_squish(paste(given_name_s, surname_s))) |>
+    dplyr::rename(email = email_our_ppg)
 
   # combine primary and secondary emails
   # so that each name may have multiple email addresses
   ppg_emails <-
-    ppg_emails |>
-    dplyr::select(name, email) |>
+    ppg_emails|>
     dplyr::bind_rows(
-      dplyr::select(ppg_emails, name, email = secondary)
+      dplyr::select(ppg_emails, name, email = email_official)
     ) |>
     dplyr::bind_rows(
-      dplyr::select(ppg_emails, name, email = tertiary)
+      dplyr::select(ppg_emails, name, email = email_other)
     ) |>
     dplyr::filter(!is.na(email)) |>
     unique() |>
