@@ -33,7 +33,8 @@ draft_ppg_ballot_email <- function(ballot_number, submission_period, form_url) {
       (schuettpelze@si.edu) or Joel Nitta (joelnitta@gmail.com).</p>",
         "<p>DO NOT REPLY TO THIS EMAIL</br>; no response will be given.</p><hr>",
         "<p>Please fill out the ballot (Google Form) here: {form_url}</p>",
-        "<p>You may vote as many times as you want until the deadline, \\
+        "<p>If you wish to vote but cannot access the ballot, please contact \\
+        Joel or Eric.</p><p>You may vote as many times as you want until the deadline, \\
       <b>{voting_deadline}</b>. Only your most recent vote will be \\
       counted.</p>",
         "<p>Thank you very much for your participation in PPG!</p>"
@@ -44,7 +45,8 @@ draft_ppg_ballot_email <- function(ballot_number, submission_period, form_url) {
   options(gargle_oauth_cache = ".secrets")
   secret_json <- list.files(
     ".secrets",
-    pattern = "client_secret.*json", full.names = TRUE
+    pattern = "client_secret.*json",
+    full.names = TRUE
   )
   gm_auth_configure(path = secret_json)
   gm_oauth_client()
