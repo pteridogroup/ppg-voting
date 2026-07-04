@@ -211,7 +211,8 @@ fetch_issues <- function(repo, n_max = 1000) {
     created_at = issues_json$created_at,
     user = issues_json$user$login,
     state = issues_json$state,
-    body = issues_json$body
+    body = issues_json$body,
+    labels = purrr::map(issues_json$labels, ~ .x$name)
   )
 
   if (nrow(issues_df) == n_max) {

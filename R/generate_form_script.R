@@ -42,6 +42,9 @@ generate_form_script <- function(
     filter(created_date > cutoff_start) |>
     filter(created_date < cutoff_end) |>
     filter(state == "open") |>
+    # Only include taxonomic proposals, not taxonomic requests
+    filter(purrr::map_lgl(labels, ~ "taxonomic proposal" %in% .x)) |>
+    filter(!purrr::map_lgl(labels, ~ "taxonomic request" %in% .x)) |>
     arrange(number)
 
   # Generate code to make form
