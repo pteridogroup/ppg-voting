@@ -7,9 +7,9 @@ source("R/functions.R")
 source("R/draft_ppg_results_email.R")
 
 # Set variables - change this each time ballot is tallied
-ballot_number <- "24"
-vote_period <- "April 2026"
-ballot_file <- "https://docs.google.com/spreadsheets/d/1qFiVjT3nzaP3naIyv5W0kt9nKx-3yopL46snhsRHZjo/edit?usp=sharing" # nolint
+ballot_number <- "25"
+vote_period <- "June 2026"
+ballot_file <- "https://docs.google.com/spreadsheets/d/1EcHaaek3mILKrWozi5E6PMQw9-EuJ_o5KSJKNQsY9ns/edit?usp=sharing" # nolint
 
 # Check ballots
 ballot_checked <- check_ballot(
@@ -49,5 +49,5 @@ format_tally_github(votes_tally, ballot_number, vote_period) |>
 
 # Draft email
 draft_ppg_results_email(votes_tally, ballot_number, vote_period)
-
+ 
 # Open pteridogroup.no.reply@gmail.com account, check drafts, and send
