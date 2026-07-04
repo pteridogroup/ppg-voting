@@ -1,0 +1,48 @@
+creation:
+  last_completed_ballot_number: 26.0
+  last_checked_submission_period: '2026-10-01'
+  forms:
+    '2026-05-01':
+      ballot_number: ~
+      form_id: ~
+      form_url: ~
+      skipped: yes
+    '2026-06-01':
+      form_id: 1ESBi3mw3ZpR_cJCd27XKkIlPX2FVNYSneEX4r-d2D8E
+      form_url: https://docs.google.com/forms/d/e/1FAIpQLSdSNA6m8w_HRfBROpGP4MTzPTrPeHx68oPXk8nOhhjZIJgRwg/viewform
+      edit_url: https://docs.google.com/forms/d/1ESBi3mw3ZpR_cJCd27XKkIlPX2FVNYSneEX4r-d2D8E/edit
+      submission_period: June 2026
+      voting_period: August 2026
+      questions:
+        github_username: 0c292262
+        proposals:
+          '153':
+            question_id: 12c7f1a5
+            number: 153.0
+            title: Recognition of Neoschizaea V.S.Silva, A.Santiago & T.E.Almeida
+              (Schizaeaceae, Polypodiopsida)
+      ballot_number: 26.0
+      announced: yes
+    '2026-07-01':
+      ballot_number: ~
+      form_id: ~
+      form_url: ~
+      skipped: yes
+    '2026-08-01':
+      ballot_number: ~
+      form_id: ~
+      form_url: ~
+      skipped: yes
+    '2026-09-01':
+      ballot_number: ~
+      form_id: ~
+      form_url: ~
+      skipped: yes
+    '2026-10-01':
+      ballot_number: ~
+      form_id: ~
+      form_url: ~
+      skipped: yes
+tally:
+  last_completed_ballot_number: 25
+  last_completed_vote_period: '2026-06-01'

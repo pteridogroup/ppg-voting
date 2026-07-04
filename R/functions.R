@@ -33,28 +33,18 @@ fix_email <- function(data) {
     )
 }
 
-check_ballot <- function(
-  ballot_file,
-  email_file
-) {
-  # Load ballot ----
-  ballot <- googlesheets4::read_sheet(ballot_file) |>
-    dplyr::rename(timestamp = Timestamp, email = `Email Address`) |>
-    fix_email()
-
-  # Load and format email list -----
-
-  # PPG mailing-list email is in column "email" and other emails are in column
-  # "other email". Combine this into single email column.
+#' Load and format the PPG mailing list
+#'
+#' PPG mailing-list email is in column "email" and other emails are in column
+#' "other email". Combines these into a single email column, one row per
+#' address, so a name may have multiple email addresses.
+load_ppg_emails <- function(email_file) {
   ppg_emails <- googlesheets4::read_sheet(email_file) |>
     janitor::clean_names() |>
     dplyr::mutate(name = str_squish(paste(given_name_s, surname_s))) |>
     dplyr::rename(email = email_our_ppg)
 
-  # combine primary and secondary emails
-  # so that each name may have multiple email addresses
-  ppg_emails <-
-    ppg_emails|>
+  ppg_emails |>
     dplyr::bind_rows(
       dplyr::select(ppg_emails, name, email = email_official)
     ) |>
@@ -66,9 +56,16 @@ check_ballot <- function(
     fix_email() |>
     assertr::assert(assertr::is_uniq, email) |>
     assertr::assert(assertr::not_na, name)
+}
 
-  # Conduct checks
+#' Check a ballot (one row per vote submission) against the PPG mailing list
+#'
+#' @param ballot Dataframe with columns timestamp, email, and one column per
+#'   proposal.
+#' @param ppg_emails Dataframe from load_ppg_emails().
+check_ballot <- function(ballot, ppg_emails) {
   ballot |>
+    fix_email() |>
     # Add check that all emails are in PPG list
     dplyr::left_join(
       dplyr::select(ppg_emails, name = name, email = email),
@@ -254,6 +251,70 @@ fetch_issues <- function(repo, n_max = 1000) {
     dplyr::select(-body)
 }
 
+#' Filter issues down to the taxonomic proposals eligible for a ballot
+#'
+#' @param issues Dataframe from fetch_issues().
+#' @param meta List with a submission_period element, e.g. from
+#'   compute_next_creation().
+filter_issues_for_ballot <- function(issues, meta) {
+  submission_month <- lubridate::my(meta$submission_period)
+  cutoff_start <- submission_month %>% magrittr::subtract(days(1))
+  cutoff_end <- submission_month %>% lubridate::ceiling_date("month")
+
+  issues |>
+    dplyr::mutate(created_date = as.Date(created_at)) |>
+    dplyr::filter(created_date > cutoff_start) |>
+    dplyr::filter(created_date < cutoff_end) |>
+    dplyr::filter(state == "open") |>
+    # Only include taxonomic proposals, not taxonomic requests
+    dplyr::filter(purrr::map_lgl(labels, ~ "taxonomic proposal" %in% .x)) |>
+    dplyr::filter(!purrr::map_lgl(labels, ~ "taxonomic request" %in% .x)) |>
+    dplyr::arrange(number)
+}
+
+#' Tally the next ballot's votes end to end. Looks at creation's actual
+#' recorded ballots (see find_next_tally()) rather than assuming a fixed
+#' monthly cadence, so this is a no-op if the next ballot hasn't been
+#' created yet.
+run_ballot_tally <- function(ballot_state, ppg_emails, state_path) {
+  form_meta <- find_next_tally(ballot_state)
+
+  if (is.null(form_meta)) {
+    message("No ballot is ready to be tallied yet.")
+    return(invisible(NULL))
+  }
+
+  ballot_number <- form_meta$ballot_number
+  vote_period <- form_meta$voting_period
+
+  token <- forms_token()
+  ballot_raw <-
+    fetch_form_responses(form_meta$form_id, token) |>
+    form_responses_to_ballot(form_meta)
+  ballot_checked <- check_ballot(ballot_raw, ppg_emails)
+  votes_tally <- tally_votes(ballot_checked)
+
+  write_tally_results(votes_tally, ballot_number)
+  write_tally_results_text(votes_tally, ballot_number, vote_period)
+  draft_ppg_results_email(votes_tally, ballot_number, vote_period)
+  mark_tally_complete(state_path, ballot_number, vote_period)
+
+  votes_tally
+}
+
+write_tally_results <- function(votes_tally, ballot_number) {
+  path <- glue::glue("results/ballot-{ballot_number}_results.csv")
+  readr::write_csv(votes_tally, path)
+  path
+}
+
+write_tally_results_text <- function(votes_tally, ballot_number, vote_period) {
+  path <- glue::glue("results/ballot-{ballot_number}_results_text.csv")
+  format_tally_github(votes_tally, ballot_number, vote_period) |>
+    readr::write_csv(path)
+  path
+}
+
 # Filter proposals to those matching a particular status string
 # and extract a single string of text to print in the email digest
 proposal_df2txt <- function(proposals, status_search, ret_empty = "none") {
@@ -285,11 +346,9 @@ next_month <- function(month) {
 #'
 #' @param month Month (and year) of the voting period, ex: "October 2023".
 #' @param timezone Timezone of the deadline.
-#' @param for_google Logical; should this be formatted for pasting into a
-#' Google script?.
 #'
 #' @return String
-make_deadline <- function(month, timezone = "UTC", for_google = FALSE) {
+make_deadline <- function(month, timezone = "UTC") {
   deadline <-
     month %>%
     # Parse the month to a date
@@ -301,15 +360,8 @@ make_deadline <- function(month, timezone = "UTC", for_google = FALSE) {
     update(hours = 23, minutes = 59, seconds = 59) %>%
     # Specify timezone. First set default to UTC, then convert from there
     with_tz("UTC") %>%
-    with_tz(timezone)
-
-  # Format the date to the desired output
-  if (for_google) {
-    deadline <- format(deadline, "%Y-%m-%d %H:%M")
-  }
-  if (!for_google) {
-    deadline <- format(deadline, "%l:%M%p on %B %e, %Y %Z")
-  }
+    with_tz(timezone) %>%
+    format("%l:%M%p on %B %e, %Y %Z")
 
   stringr::str_squish(deadline)
 }
