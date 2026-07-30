@@ -96,7 +96,7 @@ digest_body <- c(
   postponed_header,
   postponed_issues,
   "<hr>",
-  "<p>Taxonomic requests awaiting review (species level or below;",
+  "<p>Taxonomic requests awaiting review (species level or below; ",
   "not part of the ballot process)</p>",
   proposal_df2txt(requests, "request")
 ) |>
