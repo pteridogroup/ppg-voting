@@ -91,8 +91,10 @@ gm_auth_configure(path = secret_json)
 gm_oauth_client()
 gm_auth("pteridogroup.no.reply@gmail.com")
 
-# Verify it looks correct, i.e. look at your Gmail drafts in the browser
-# gm_create_draft(digest_email) # nolint
-
-# or just send the existing MIME message
-gm_send_message(digest_email)
+# Set DIGEST_DRAFT_ONLY=true to create a Gmail draft instead of actually
+# sending, e.g. to test a manual workflow run without emailing the group
+if (identical(Sys.getenv("DIGEST_DRAFT_ONLY"), "true")) {
+  gm_create_draft(digest_email)
+} else {
+  gm_send_message(digest_email)
+}

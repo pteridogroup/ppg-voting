@@ -32,6 +32,48 @@ If a submission month has no eligible proposals, no form is created and no ballo
    ```
    Complete the browser consent for `pteridogroup.no.reply@gmail.com`. The token is cached in `.secrets`, so subsequent `tar_make()` runs can reuse it silently.
 
+## Weekly digest email
+
+`R/digest.R` sends a weekly summary of open taxonomic proposals to the PPG
+mailing list. It runs automatically via GitHub Actions
+(`.github/workflows/digest.yml`) every Monday at 00:00 UTC, and can also
+be triggered manually from the Actions tab or with
+`gh workflow run digest.yml`.
+
+**One-time / as-needed setup:**
+
+The workflow authenticates as `pteridogroup.no.reply@gmail.com` using the
+same `.secrets/` OAuth cache as the monthly ballot pipeline, reconstructed
+at runtime from GitHub Actions secrets:
+
+- `GMAIL_CLIENT_SECRET_JSON` — base64 of `.secrets/client_secret*.json`.
+- `GMAIL_OAUTH_TOKEN_1` .. `GMAIL_OAUTH_TOKEN_10` — the cached OAuth
+  token, base64-encoded and split into chunks because it's too large
+  (~260-350 KB) for a single GitHub secret (~48 KB limit).
+
+If the cached token in `.secrets/` needs to be (re)created — e.g. it was
+revoked, or this is a fresh checkout — authenticate locally first:
+
+```r
+library(gmailr)
+options(gargle_oauth_cache = ".secrets")
+gm_auth_configure(path = list.files(
+  ".secrets", pattern = "client_secret.*json", full.names = TRUE
+))
+gm_auth("pteridogroup.no.reply@gmail.com", cache = ".secrets")
+```
+
+Then push the result to GitHub with:
+
+```bash
+./scripts/set_gmail_oauth_secret.sh
+```
+
+This splits the token into the numbered secrets above and clears any
+unused slots left over from a previous, larger token. Run both steps on
+your host machine, not inside the dev container — the container has no
+browser for the OAuth consent step, and doesn't have `gh` installed.
+
 ## License
 
 All code is available under the [MIT license](LICENSE)

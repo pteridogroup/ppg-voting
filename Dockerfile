@@ -57,31 +57,6 @@ WORKDIR /tmp/project
 # Restore, but don't use cache
 RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
 
-############
-### Cron ###
-############
-
-# cron is used to run R/digest.R automatically once per week
-
-RUN apt-get -y install cron
-
-# Write script to launch R/digest.R from /wd/
-RUN echo "#!/bin/bash" >> /home/digest.sh && \
-  echo "cd /wd" >> /home/digest.sh && \
-  echo "/usr/local/bin/Rscript /wd/R/digest.R" >> /home/digest.sh && \
-  chmod 0644 /home/digest.sh
-
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
-
-# Setup cron job: Run at 12:00am on Monday
-RUN (crontab -l ; echo "0 0 * * 1 bash /home/digest.sh >> /var/log/cron.log 2>&1") | crontab
-
-# To run the cron job, provide the command `cron` to `docker run`:
-# docker run --rm -dt -v ${PWD}:/wd -w /wd --name digest_cron --user root joelnitta/ppg-voting:latest cron -f
-# 
-# as long as the container is up, it will run the job once per week
-
 ############################
 ### Set up non-root user ###
 ############################

@@ -1,0 +1,71 @@
+name: Weekly digest email
+
+on:
+  schedule:
+    # Every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+    inputs:
+      draft_only:
+        description: >-
+          Create a Gmail draft instead of actually sending to the group
+        type: boolean
+        default: true
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.0'
+
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Restore Gmail OAuth secrets
+        env:
+          CLIENT_SECRET_B64: ${{ secrets.GMAIL_CLIENT_SECRET_JSON }}
+          # The cached OAuth token is too large for a single GitHub
+          # secret (~48 KB limit), so it's base64-encoded and split
+          # across numbered chunk secrets. See
+          # scripts/set_gmail_oauth_secret.sh for how these are set.
+          OAUTH_TOKEN_B64_1: ${{ secrets.GMAIL_OAUTH_TOKEN_1 }}
+          OAUTH_TOKEN_B64_2: ${{ secrets.GMAIL_OAUTH_TOKEN_2 }}
+          OAUTH_TOKEN_B64_3: ${{ secrets.GMAIL_OAUTH_TOKEN_3 }}
+          OAUTH_TOKEN_B64_4: ${{ secrets.GMAIL_OAUTH_TOKEN_4 }}
+          OAUTH_TOKEN_B64_5: ${{ secrets.GMAIL_OAUTH_TOKEN_5 }}
+          OAUTH_TOKEN_B64_6: ${{ secrets.GMAIL_OAUTH_TOKEN_6 }}
+          OAUTH_TOKEN_B64_7: ${{ secrets.GMAIL_OAUTH_TOKEN_7 }}
+          OAUTH_TOKEN_B64_8: ${{ secrets.GMAIL_OAUTH_TOKEN_8 }}
+          OAUTH_TOKEN_B64_9: ${{ secrets.GMAIL_OAUTH_TOKEN_9 }}
+          OAUTH_TOKEN_B64_10: ${{ secrets.GMAIL_OAUTH_TOKEN_10 }}
+        run: |
+          mkdir -p .secrets
+          token_file=".secrets/02d6f7478a49cc775e923b60edd0e9e4"
+          token_file="${token_file}_pteridogroup.no.reply@gmail.com"
+          echo "$CLIENT_SECRET_B64" | base64 -d \
+            > .secrets/client_secret.json
+          {
+            printf '%s' "$OAUTH_TOKEN_B64_1"
+            printf '%s' "$OAUTH_TOKEN_B64_2"
+            printf '%s' "$OAUTH_TOKEN_B64_3"
+            printf '%s' "$OAUTH_TOKEN_B64_4"
+            printf '%s' "$OAUTH_TOKEN_B64_5"
+            printf '%s' "$OAUTH_TOKEN_B64_6"
+            printf '%s' "$OAUTH_TOKEN_B64_7"
+            printf '%s' "$OAUTH_TOKEN_B64_8"
+            printf '%s' "$OAUTH_TOKEN_B64_9"
+            printf '%s' "$OAUTH_TOKEN_B64_10"
+          } | base64 -d > "$token_file"
+
+      - name: Run digest script
+        env:
+          DIGEST_DRAFT_ONLY: >-
+            ${{ github.event_name == 'workflow_dispatch'
+                && inputs.draft_only
+                || 'false' }}
+        run: Rscript R/digest.R
