@@ -11,14 +11,20 @@ source("R/functions.R")
 current_day <- today("UTC")
 current_month <- floor_date(current_day, "month")
 
-# Filter to proposals to include in email, add status and text to print
-proposals <-
+# Fetch open issues once; split into proposals (genus or higher, go
+# through the monthly ballot) and requests (species level or below,
+# resolved directly, never voted on)
+open_issues <-
   fetch_issues("pteridogroup/ppg") |>
   filter(state == "open") |>
+  mutate(created_at = ymd_hms(created_at, tz = "UTC"))
+
+# Filter to proposals to include in email, add status and text to print
+proposals <-
+  open_issues |>
   # Only include taxonomic proposals (should have an entry for rank)
   filter(!is.na(rank)) |>
   mutate(
-    created_at = ymd_hms(created_at, tz = "UTC"),
     created_month = floor_date(created_at, "month"),
     status = case_when(
       created_month < current_month %m-% months(2) ~ "Older",
@@ -47,13 +53,29 @@ postponed_header <- if (!is.null(postponed_issues)) {
   NULL
 }
 
+# Taxonomic requests aren't tied to the ballot cycle, so list every
+# currently open one as an ongoing backlog reminder, rather than
+# bucketing by submission month like proposals
+requests <-
+  open_issues |>
+  filter(purrr::map_lgl(labels, ~ "taxonomic request" %in% .x)) |>
+  filter(!purrr::map_lgl(labels, ~ "taxonomic proposal" %in% .x)) |>
+  arrange(desc(created_at)) |>
+  mutate(
+    status = "request",
+    text = glue::glue(
+      "{number}. {title}: {url} ({year(created_at)}-{month(created_at)}-{day(created_at)})" # nolint
+    )
+  )
+
 # Generate email text
 digest_subject <- glue::glue("PPG Email Digest {current_day}")
 digest_body <- c(
   glue::glue("<p><b>{digest_subject}</b></p>"),
   paste(
-    "<p>This is an automated email summarizing taxonomic proposals submitted",
-    "to PPG (https://github.com/pteridogroup/ppg). It is sent to everyone",
+    "<p>This is an automated email summarizing taxonomic proposals and",
+    "requests submitted to PPG (https://github.com/pteridogroup/ppg).",
+    "It is sent to everyone",
     "on the PPG mailing list once per week. If you do not wish to receive",
     "it or have any questions, please contact Eric Schuettpelz",
     "(schuettpelze@si.edu) or Joel Nitta (joelnitta@gmail.com).</p>",
@@ -72,7 +94,11 @@ digest_body <- c(
   "<p>Proposals submitted two months ago (on current ballot)</p>",
   proposal_df2txt(proposals, "current ballot"),
   postponed_header,
-  postponed_issues
+  postponed_issues,
+  "<hr>",
+  "<p>Taxonomic requests awaiting review (species level or below;",
+  "not part of the ballot process)</p>",
+  proposal_df2txt(requests, "request")
 ) |>
   paste(collapse = "")
 
