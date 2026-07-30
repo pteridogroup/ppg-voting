@@ -24,13 +24,11 @@ jobs:
         with:
           r-version: '4.6.0'
 
-      # sf/terra/units/s2 pull in pre-built binaries linked against a
-      # newer PROJ/GDAL/GEOS than Ubuntu's default repos ship, which
-      # fails at load time with e.g. "libproj.so.25: cannot open shared
-      # object file". The ubuntugis PPA provides matching versions.
+      # sf/terra/units/s2 pull in pre-built binaries linked against
+      # PROJ/GDAL/GEOS, which fails at load time (e.g. "libproj.so.25:
+      # cannot open shared object file") if those aren't present.
       - name: Install spatial system libraries
         run: |
-          sudo add-apt-repository -y ppa:ubuntugis/ppa
           sudo apt-get update
           sudo apt-get install -y \
             libgdal-dev \
