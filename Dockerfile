@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.3.1
+FROM rocker/r-ver:4.6.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -6,25 +6,33 @@ ARG DEBIAN_FRONTEND=noninteractive
 ### Install APT packages ###
 ############################
 
-# cron for cronjobs
-# get list of other deps using R/find_deps.R
+# get list of deps using R/find_deps.R
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    cron \
+    cmake \
+    curl \
+    gdal-bin \
+    libabsl-dev \
     libcurl4-openssl-dev \
     libfontconfig1-dev \
     libfreetype6-dev \
     libfribidi-dev \
+    libgdal-dev \
+    libgeos-dev \
     libharfbuzz-dev \
     libicu-dev \
     libjpeg-dev \
     libpng-dev \
+    libproj-dev \
     libssl-dev \
     libtiff-dev \
+    libudunits2-dev \
+    libuv1-dev \
     libxml2-dev \
     make \
     pandoc \
+    proj-bin \
     zlib1g-dev \
   && apt-get clean
 
@@ -90,7 +98,13 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get update \
     && apt-get install -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    # Let any container user install packages (e.g. languageserver for
+    # VS Code) into the renv library without needing root. Using chmod
+    # instead of chown because devcontainer tooling remaps the user's
+    # UID to match the host user's UID after this image is built, so a
+    # chown baked in at build time would not survive that remap.
+    && chmod -R a+rwX /renv
 
 # Set the default user. Omit if you want to keep the default as root.
 USER $USERNAME

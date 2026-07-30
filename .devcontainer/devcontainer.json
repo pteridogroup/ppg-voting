@@ -1,0 +1,24 @@
+{
+  "name": "ppg-voting",
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "remoteUser": "ppg",
+  "postCreateCommand": "Rscript -e 'install.packages(\"languageserver\")'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "REditorSupport.r",
+        "REditorSupport.r-debugger"
+      ],
+      "settings": {
+        "r.rterm.linux": "/usr/local/bin/R",
+        "r.bracketedPaste": true
+      }
+    }
+  }
+}
