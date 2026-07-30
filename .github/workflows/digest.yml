@@ -24,17 +24,36 @@ jobs:
         with:
           r-version: '4.6.0'
 
-      # sf/terra/units/s2 pull in pre-built binaries linked against
-      # PROJ/GDAL/GEOS, which fails at load time (e.g. "libproj.so.25:
-      # cannot open shared object file") if those aren't present.
-      - name: Install spatial system libraries
+      # Same system libraries the Dockerfile installs for this
+      # renv.lock: several packages (sf/terra/units, s2, igraph,
+      # ragg/textshaping) pull in pre-built binaries that fail to load
+      # without their matching system libraries present.
+      - name: Install system libraries
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            cmake \
+            gdal-bin \
+            libabsl-dev \
+            libcurl4-openssl-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libfribidi-dev \
             libgdal-dev \
             libgeos-dev \
+            libglpk-dev \
+            libharfbuzz-dev \
+            libicu-dev \
+            libjpeg-dev \
+            libpng-dev \
             libproj-dev \
-            libudunits2-dev
+            libssl-dev \
+            libtiff-dev \
+            libudunits2-dev \
+            libuv1-dev \
+            libx11-dev \
+            libxml2-dev \
+            zlib1g-dev
 
       - uses: r-lib/actions/setup-renv@v2
 
