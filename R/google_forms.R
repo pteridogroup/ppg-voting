@@ -163,6 +163,14 @@ create_ballot_form <- function(meta, issues_to_vote, state_path) {
     return(existing)
   }
 
+  if (!meta$ready) {
+    message(
+      "Submission period ", meta$submission_period, " isn't over yet; ",
+      "nothing to do until it ends."
+    )
+    return(invisible(NULL))
+  }
+
   if (nrow(issues_to_vote) == 0) {
     message(
       "No eligible taxonomic proposals for ", meta$submission_period, "; ",

@@ -44,6 +44,11 @@ warn_if_backlogged <- function(next_period, stage) {
 #' next ballot to be created. The period advances one month at a time
 #' regardless of whether prior months had eligible proposals; the ballot
 #' number only advances when a month actually produces a ballot.
+#'
+#' `ready` is FALSE while the submission month is still ongoing (or in the
+#' future) - a period can't be judged to have "no eligible proposals" (and
+#' recorded as skipped) until it's actually over, otherwise a proposal
+#' submitted later in that same month would be silently missed.
 compute_next_creation <- function(state) {
   next_period <- add_month(as.Date(state$creation$last_checked_submission_period))
   warn_if_backlogged(next_period, "Ballot creation")
@@ -56,7 +61,8 @@ compute_next_creation <- function(state) {
     ballot_number = state$creation$last_completed_ballot_number + 1,
     submission_period = submission_period,
     discussion_period = discussion_period,
-    voting_period = voting_period
+    voting_period = voting_period,
+    ready = period_has_ended(submission_period)
   )
 }
 

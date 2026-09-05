@@ -1,6 +1,6 @@
 creation:
   last_completed_ballot_number: 26.0
-  last_checked_submission_period: '2026-10-01'
+  last_checked_submission_period: '2026-08-01'
   forms:
     '2026-05-01':
       ballot_number: ~
@@ -23,6 +23,7 @@ creation:
               (Schizaeaceae, Polypodiopsida)
       ballot_number: 26.0
       announced: yes
+      closed: yes
     '2026-07-01':
       ballot_number: ~
       form_id: ~
@@ -33,16 +34,6 @@ creation:
       form_id: ~
       form_url: ~
       skipped: yes
-    '2026-09-01':
-      ballot_number: ~
-      form_id: ~
-      form_url: ~
-      skipped: yes
-    '2026-10-01':
-      ballot_number: ~
-      form_id: ~
-      form_url: ~
-      skipped: yes
 tally:
-  last_completed_ballot_number: 25
-  last_completed_vote_period: '2026-06-01'
+  last_completed_ballot_number: 26.0
+  last_completed_vote_period: '2026-08-01'
