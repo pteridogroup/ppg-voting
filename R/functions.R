@@ -251,9 +251,19 @@ fetch_issues <- function(repo, n_max = 1000) {
     dplyr::select(-body)
 }
 
-#' Filter issues down to the taxonomic proposals eligible for a ballot
+#' Filter issues down to those labeled "taxonomic proposal" (not
+#' "taxonomic request")
 #'
 #' @param issues Dataframe from fetch_issues().
+filter_taxonomic_proposals <- function(issues) {
+  issues |>
+    dplyr::filter(purrr::map_lgl(labels, ~ "taxonomic proposal" %in% .x))
+}
+
+#' Filter issues down to the taxonomic proposals eligible for a ballot
+#'
+#' @param issues Dataframe from fetch_issues(), already filtered to
+#'   taxonomic proposals via filter_taxonomic_proposals().
 #' @param meta List with a submission_period element, e.g. from
 #'   compute_next_creation().
 filter_issues_for_ballot <- function(issues, meta) {
@@ -266,9 +276,6 @@ filter_issues_for_ballot <- function(issues, meta) {
     dplyr::filter(created_date > cutoff_start) |>
     dplyr::filter(created_date < cutoff_end) |>
     dplyr::filter(state == "open") |>
-    # Only include taxonomic proposals, not taxonomic requests
-    dplyr::filter(purrr::map_lgl(labels, ~ "taxonomic proposal" %in% .x)) |>
-    dplyr::filter(!purrr::map_lgl(labels, ~ "taxonomic request" %in% .x)) |>
     dplyr::arrange(number)
 }
 

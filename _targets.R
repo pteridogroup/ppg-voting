@@ -21,7 +21,8 @@ list(
   tar_target(state_file, state_path, format = "file"),
   tar_target(ballot_state, read_ballot_state(state_file)),
   tar_target(
-    issues, fetch_issues("pteridogroup/ppg"),
+    issues,
+    fetch_issues("pteridogroup/ppg") |> filter_taxonomic_proposals(),
     cue = tar_cue(mode = "always")
   ),
 
